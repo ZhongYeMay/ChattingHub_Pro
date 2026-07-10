@@ -1,0 +1,12 @@
+﻿:root { font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; color: #1b1b1b; background: #dbe8f5; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input { font-family: inherit !important; }
+button:focus-visible, input:focus-visible { outline: 2px solid #0067c0 !important; outline-offset: 2px; }
+#chat-root > div { background-image: radial-gradient(circle at 20% 15%, #d8ecff 0, transparent 31%), radial-gradient(circle at 82% 72%, #d7defc 0, transparent 33%), linear-gradient(135deg, #eaf4ff 0%, #d9e7f5 48%, #cbd9ec 100%) !important; font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif !important; }
+#chat-root > div > div[style*="z-index: 10"] { border-radius: 8px !important; background: rgba(251, 251, 251, .94) !important; border: 1px solid rgba(255,255,255,.75) !important; box-shadow: 0 12px 32px rgba(0,0,0,.22) !important; backdrop-filter: blur(28px) !important; }
+input[type="text"] { border-radius: 5px !important; background: rgba(255,255,255,.9) !important; }
+button { border-radius: 5px !important; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(95,95,95,.35); border: 3px solid transparent; border-radius: 10px; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(95,95,95,.55); border: 3px solid transparent; background-clip: padding-box; }
