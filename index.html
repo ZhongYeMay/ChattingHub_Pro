@@ -1,13 +1,111 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chattinghub</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChattingHub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- macOS 独立应用窗口 -->
+  <div class="mac-window">
+    
+    <!-- 顶部标题栏 (Titlebar) -->
+    <header class="mac-titlebar">
+      <div class="traffic-lights">
+        <button class="light close" aria-label="关闭"></button>
+        <button class="light minimize" aria-label="最小化"></button>
+        <button class="light maximize" aria-label="最大化"></button>
+      </div>
+      <div class="mac-title">ChattingHub</div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="mac-container">
+      
+      <!-- 左侧边栏 (Sidebar) -->
+      <aside class="mac-sidebar">
+        <!-- 个人资料区 -->
+        <div class="sidebar-header">
+          <div class="user-profile">
+            <div class="avatar">A</div>
+            <div class="user-info">
+              <span class="username">あきひろ</span> <!-- 你的专属署名 -->
+              <span class="status online">在线</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <nav class="sidebar-menu">
+          <ul class="menu-list">
+            <li class="menu-item active">
+              <span class="icon">💬</span>
+              <span class="label">当前聊天</span>
+            </li>
+            <li class="menu-item">
+              <span class="icon">👥</span>
+              <span class="label">联系人</span>
+            </li>
+            <li class="menu-item">
+              <span class="icon">⚙️</span>
+              <span class="label">设置</span>
+            </li>
+          </ul>
+        </nav>
+        
+        <!-- 会话列表 -->
+        <div class="chat-list-container">
+          <div class="list-title">最近会话</div>
+          <ul class="chat-list" id="chat-list">
+            <!-- 动态渲染的联系人会话放到这里 -->
+            <li class="chat-item active">
+              <div class="chat-avatar">S</div>
+              <div class="chat-details">
+                <span class="chat-name">Sakura</span>
+                <span class="chat-preview">今週末、暇？</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- 右侧聊天主窗口 (Chat Area) -->
+      <main class="mac-chat-area">
+        
+        <!-- 聊天头部 -->
+        <div class="chat-header">
+          <div class="active-chat-info">
+            <span class="active-name" id="current-chat-name">Sakura</span>
+            <span class="active-status">在线</span>
+          </div>
+        </div>
+
+        <!-- 消息滚动区域 -->
+        <div class="chat-messages" id="message-container">
+          <!-- 接收到的消息 -->
+          <div class="message message-received">
+            <div class="msg-avatar">S</div>
+            <div class="msg-bubble">こんにちは！</div>
+          </div>
+          <!-- 发送的消息 -->
+          <div class="message message-sent">
+            <div class="msg-bubble">你好呀！</div>
+          </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <footer class="chat-input-bar">
+          <div class="input-wrapper">
+            <button class="action-btn attach-btn" title="发送文件">📎</button>
+            <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off">
+            <button class="action-btn emoji-btn" title="表情">😀</button>
+            <button class="send-btn" id="send-btn">发送</button>
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+</body>
 </html>
