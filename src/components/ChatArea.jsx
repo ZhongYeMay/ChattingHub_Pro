@@ -24,13 +24,18 @@ export default function ChatArea({
 }) {
   const fileInputRef = useRef(null)
 
-  // 1. 💫 气泡功能专属状态集
+  // 1. 💫 气泡功能与多 Emoji 专属状态集
   const [hoveredMsgId, setHoveredMsgId] = useState(null)          // 当前悬停的消息 ID
   const [contextMenu, setContextMenu] = useState(null)            // 右键菜单位置及消息对象 { x, y, msg }
-  const [reactions, setReactions] = useState({})                  // 消息快捷表态本地映射表 { [msgId]: '❤️' }
-  const [localToast, setLocalToast] = useState(null)              // 独立于父级的内聚轻量提示框
+  
+  // 核心数据结构重构：reactions: { [msgId]: { [emoji]: true/false } }
+  const [reactions, setReactions] = useState({})                  
+  const [localToast, setLocalToast] = useState(null)              // 自闭环轻量提示
 
-  // 2. 自闭环通知提示器
+  // 常用 Emoji 候选池
+  const EMOJI_POOL = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+
+  // 自闭环通知提示器
   const triggerLocalToast = (text) => {
     setLocalToast(text)
     setTimeout(() => setLocalToast(null), 2200)
@@ -43,7 +48,7 @@ export default function ChatArea({
     return () => window.removeEventListener('click', closeMenu)
   }, [])
 
-  // 3. 🕒 顶部/分割线级时间格式化
+  // 🕒 顶部/分割线级时间格式化
   const formatTime = (isoString) => {
     if (!isoString) return ''
     const date = new Date(isoString)
@@ -78,7 +83,7 @@ export default function ChatArea({
   }
 
   // ==========================================
-  // ⚡ 气泡业务功能处理器
+  // ⚡ 气泡多功能交互处理器
   // ==========================================
   
   // 复制消息文本
@@ -88,12 +93,18 @@ export default function ChatArea({
     triggerLocalToast('📋 消息已成功复制到剪贴板')
   }
 
-  // 双击或点击快捷添加爱心表态
-  const toggleReaction = (msgId) => {
-    setReactions(prev => ({
-      ...prev,
-      [msgId]: prev[msgId] ? null : '❤️'
-    }))
+  // 多表情切换逻辑（支持同一条消息附加多个不同的表情）
+  const toggleReaction = (msgId, emoji) => {
+    setReactions(prev => {
+      const msgReactions = prev[msgId] || {}
+      return {
+        ...prev,
+        [msgId]: {
+          ...msgReactions,
+          [emoji]: !msgReactions[emoji]
+        }
+      }
+    })
   }
 
   // 引用并回复该条消息
@@ -102,7 +113,6 @@ export default function ChatArea({
     const cleanContent = typeof msg.content === 'string' ? msg.content : '[文件/媒体数据]'
     const truncated = cleanContent.length > 18 ? cleanContent.slice(0, 18) + '...' : cleanContent
     
-    // 生成格式化的回复引用文本
     const quoteText = `「回复 @${senderName}：${truncated}」\n`
     setNewMessage(prev => quoteText + prev)
     triggerLocalToast('💬 已将引用放入输入框')
@@ -177,7 +187,7 @@ export default function ChatArea({
         </div>
       )}
 
-      {/* 3. 消息流滚动渲染区域 */}
+      {/* 2. 消息流滚动渲染区域 */}
       <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === myProfile?.id
@@ -189,6 +199,9 @@ export default function ChatArea({
             if (!prevMsg || !prevMsg.created_at || !msg.created_at) return false
             return (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) > 5 * 60 * 1000 
           })()
+
+          // 获取该条消息当前已被激活的表情
+          const activeEmojis = Object.keys(reactions[msgId] || {}).filter(emoji => reactions[msgId][emoji])
 
           return (
             <div key={msgId} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -207,7 +220,7 @@ export default function ChatArea({
                   gap: '10px', 
                   flexDirection: isMe ? 'row-reverse' : 'row', 
                   alignItems: 'flex-start', 
-                  maxWidth: '80%', 
+                  maxWidth: '85%', 
                   alignSelf: isMe ? 'flex-end' : 'flex-start',
                   position: 'relative'
                 }}
@@ -227,31 +240,55 @@ export default function ChatArea({
 
                   <div style={{ position: 'relative' }}>
                     
-                    {/* ✨ 功能 A: 悬停快捷小工具条（Hover Quick Action Bar） */}
+                    {/* ✨ 功能 A: 豪华版悬停表情+工具混合条 */}
                     {hoveredMsgId === msgId && !isPending && (
                       <div style={{
                         position: 'absolute',
-                        top: '-32px',
-                        [isMe ? 'left' : 'right']: '0',
+                        top: '-36px',
+                        [isMe ? 'left' : '0']: '0',
                         display: 'flex',
-                        gap: '6px',
+                        alignItems: 'center',
+                        gap: '8px',
                         backgroundColor: md3.surfaceContainerHigh,
                         border: `1px solid ${md3.outline}`,
-                        borderRadius: '20px',
-                        padding: '2px 8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                        borderRadius: '24px',
+                        padding: '3px 10px',
+                        boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
                         zIndex: 20,
                         animation: 'fadeIn 0.15s ease'
                       }}>
-                        <button onClick={() => toggleReaction(msgId)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="快捷表态 ❤️">❤️</button>
-                        <button onClick={() => handleReply(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="引用回复">💬</button>
-                        <button onClick={() => copyToClipboard(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="复制消息">📋</button>
+                        {/* 常用 Emoji 托盘 */}
+                        <div style={{ display: 'flex', gap: '5px', borderRight: `1px solid ${md3.outline}`, paddingRight: '8px' }}>
+                          {EMOJI_POOL.map(emoji => (
+                            <span
+                              key={emoji}
+                              onClick={() => toggleReaction(msgId, emoji)}
+                              style={{
+                                cursor: 'pointer',
+                                fontSize: '15px',
+                                transition: 'transform 0.1s ease',
+                                userSelect: 'none',
+                                display: 'inline-block'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.3)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                              {emoji}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* 基础工具 */}
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button onClick={() => handleReply(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="引用回复">💬</button>
+                          <button onClick={() => copyToClipboard(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="复制消息">📋</button>
+                        </div>
                       </div>
                     )}
 
-                    {/* ✨ 消息实体气泡（增加双击、右键事件） */}
+                    {/* ✨ 消息实体气泡 */}
                     <div 
-                      onDoubleClick={() => toggleReaction(msgId)}
+                      onDoubleClick={() => toggleReaction(msgId, '❤️')} // 双击快捷点心
                       onContextMenu={(e) => handleContextMenu(e, msg)}
                       style={{ 
                         padding: '10px 14px', 
@@ -270,7 +307,7 @@ export default function ChatArea({
                       onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.98)' }}
                       onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
                     >
-                      {/* 渲染 P2P 提示卡片 */}
+                      {/* P2P 提示卡片 */}
                       {typeof msg.content === 'string' && msg.content.includes('"type":"p2p-file"') ? (() => {
                         try {
                           const fileData = JSON.parse(msg.content)
@@ -288,35 +325,47 @@ export default function ChatArea({
                         msg.content
                       )}
 
-                      {/* 气泡右下角微标时间 */}
+                      {/* 时间微标 */}
                       <span style={{ display: 'block', fontSize: '9px', opacity: 0.6, textAlign: 'right', marginTop: '4px', userSelect: 'none', marginLeft: '12px' }}>
                         {formatShortTime(msg.created_at)} {isPending && ' (待同步)'}
                       </span>
                     </div>
 
-                    {/* ✨ 功能 B: 表态挂件 badge */}
-                    {reactions[msgId] && (
+                    {/* ✨ 功能 B: 多 Emoji 并存并排徽章 */}
+                    {activeEmojis.length > 0 && (
                       <div 
-                        onClick={() => toggleReaction(msgId)}
                         style={{
                           position: 'absolute',
-                          bottom: '-12px',
+                          bottom: '-14px',
                           [isMe ? 'left' : 'right']: '12px',
-                          backgroundColor: md3.surfaceContainerHigh,
-                          border: `1px solid ${md3.outline}`,
-                          borderRadius: '20px',
-                          padding: '2px 6px',
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
+                          gap: '4px',
                           zIndex: 10,
-                          userSelect: 'none'
+                          pointerEvents: 'auto'
                         }}
                       >
-                        {reactions[msgId]} <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 'bold' }}>1</span>
+                        {activeEmojis.map(emoji => (
+                          <div 
+                            key={emoji}
+                            onClick={() => toggleReaction(msgId, emoji)}
+                            style={{
+                              backgroundColor: md3.surfaceContainerHigh,
+                              border: `1px solid ${md3.outline}`,
+                              borderRadius: '20px',
+                              padding: '2px 6px',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                              userSelect: 'none',
+                              animation: 'scaleIn 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                            }}
+                          >
+                            {emoji} <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: 'bold' }}>1</span>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -330,7 +379,7 @@ export default function ChatArea({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 🛠️ 功能 C: 自定义右键上下文弹出菜单 */}
+      {/* 🛠️ 功能 C: 自定义右键弹出菜单（带 Emoji 置顶栏） */}
       {contextMenu && (
         <div style={{
           position: 'fixed',
@@ -338,28 +387,57 @@ export default function ChatArea({
           left: `${contextMenu.x}px`,
           backgroundColor: md3.surfaceContainerHigh,
           border: `1px solid ${md3.outline}`,
-          borderRadius: '10px',
+          borderRadius: '12px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
           zIndex: 1000,
-          padding: '4px 0',
+          padding: '8px 0',
           display: 'flex',
           flexDirection: 'column',
-          minWidth: '120px',
+          minWidth: '160px',
           animation: 'scaleIn 0.12s ease-out'
         }} onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => { copyToClipboard(contextMenu.msg.content); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '10px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          
+          {/* 快捷 Emoji 置顶行 */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-around',
+            padding: '4px 10px 8px 10px',
+            borderBottom: `1px solid ${md3.outline}`,
+            marginBottom: '4px'
+          }}>
+            {EMOJI_POOL.map(emoji => (
+              <span
+                key={emoji}
+                onClick={() => { 
+                  const targetId = contextMenu.msg.id || `local-${messages.indexOf(contextMenu.msg)}`
+                  toggleReaction(targetId, emoji)
+                  setContextMenu(null)
+                }}
+                style={{
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.1s',
+                  padding: '2px',
+                  display: 'inline-block'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.35)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {emoji}
+              </span>
+            ))}
+          </div>
+
+          <button onClick={() => { copyToClipboard(contextMenu.msg.content); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '8px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>📋</span> 复制文本
           </button>
-          <button onClick={() => { handleReply(contextMenu.msg); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '10px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => { handleReply(contextMenu.msg); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '8px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>💬</span> 引用回复
-          </button>
-          <button onClick={() => { toggleReaction(contextMenu.msg.id || contextMenu.msg.created_at); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '10px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>❤️</span> 爱心表态
           </button>
         </div>
       )}
 
-      {/* 4. 自闭环内聚提示层 */}
+      {/* 4. 自闭环轻提示 */}
       {localToast && (
         <div style={{
           position: 'absolute',
@@ -387,7 +465,7 @@ export default function ChatArea({
           {uploadProgress !== null && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: md3.onSurface, fontWeight: '600', marginBottom: '4px' }}>
-                <span>📤 正在通过 P2P 管道极速上传文件...</span>
+                <span>📤 正在通过 P2P 管道极速上传...</span>
                 <span>{uploadProgress}%</span>
               </div>
               <div style={{ width: '100%', height: '6px', backgroundColor: md3.outline, borderRadius: '3px', overflow: 'hidden' }}>
@@ -444,14 +522,14 @@ export default function ChatArea({
         </form>
       </div>
 
-      {/* 注入动画样式 */}
+      {/* 动画帧注入 */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translate(-50%, 10px); }
           to { opacity: 1; transform: translate(-50%, 0); }
         }
         @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.92); }
+          from { opacity: 0; transform: scale(0.85); }
           to { opacity: 1; transform: scale(1); }
         }
       `}</style>
