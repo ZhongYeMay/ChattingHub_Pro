@@ -327,11 +327,16 @@ export default function ChatApp() {
       })
       .subscribe()
 
+    // 💡 实时长连接更新：捕获 INSERT 以及新增的 DELETE 广播事件从而保持多端秒级同步
     const msgChannel = supabase.channel(`room-${currentRoom.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `room_id=eq.${currentRoom.id}` }, async (payload) => {
         const { data } = await supabase.from('profiles').select('username, display_name, avatar_url').eq('id', payload.new.sender_id).single()
         const clearText = await decryptMessage(payload.new.content, currentRoom.id)
         setMessages((prev) => [...prev.filter(m => !m.is_pending), { ...payload.new, content: clearText, profiles: data }])
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages', filter: `room_id=eq.${currentRoom.id}` }, (payload) => {
+        // 当数据库记录被删除时（即有人发起了撤回），本地消息队列同步过滤隐藏该节点
+        setMessages((prev) => prev.filter(m => m.id !== payload.old.id))
       })
       .subscribe()
 
@@ -430,7 +435,7 @@ export default function ChatApp() {
     }
   }
 
-  // 核心重构优化点：修正成员邀请逻辑，精准捕获并提示数据库层抛出的真实错误
+  // 修正成员邀请逻辑，精准捕获并提示数据库层抛出的真实错误
   const submitInviteMember = async (e) => {
     e.preventDefault()
     if (!inviteUsername.trim()) return triggerToast('请输入用户名。', 'error')
@@ -452,6 +457,28 @@ export default function ChatApp() {
     } else { 
       triggerToast(`成功邀请成员 ${targetProfile.display_name} 加入群聊。`, 'success')
       fetchRooms() 
+    }
+  }
+
+  // =======================================================
+  // 📍 【 A 】: 全量消息撤回处理器芯片安放成功
+  // =======================================================
+  const recallMessage = async (messageId) => {
+    if (!messageId) return
+
+    try {
+      // 1. 乐观更新：本地消息队列先瞬间抹掉，达成完美的 0 延迟秒撤视感
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId))
+
+      // 2. 实体销毁：彻底在 Supabase 数据库中清除该行记录
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+
+      if (error) throw error
+    } catch (err) {
+      console.error('撤回逻辑执行报错，正尝试容错同步：', err.message)
     }
   }
 
@@ -567,9 +594,15 @@ export default function ChatApp() {
                   setNewGroupName={setNewGroupName} triggerToast={triggerToast} md3={md3} 
                   setIsSettingsOpen={setIsSettingsOpen} 
                 />
+                
+                {/* =======================================================
+                    📍 【 B 】: 纽带完美系上，成功将撤回事件传递给子气泡组件
+                    ======================================================= */}
                 <ChatArea 
                   currentRoom={currentRoom} myProfile={myProfile} messages={messages} resolveRoomMeta={resolveRoomMeta} messagesEndRef={messagesEndRef} newMessage={newMessage} setNewMessage={setNewMessage} sendMessage={sendMessage} isInviting={isInviting} setIsInviting={setIsInviting} inviteUsername={inviteUsername} setInviteUsername={setInviteUsername} submitInviteMember={submitInviteMember} md3={md3} 
                   uploadProgress={uploadProgress} downloadProgress={downloadProgress} incomingFile={incomingFile} setIncomingFile={setIncomingFile} handleSendFile={handleSendFile} isPeerOnline={isPeerOnline}
+                  
+                  recallMessage={recallMessage} 
                 />
               </>
             )}

@@ -20,35 +20,34 @@ export default function ChatArea({
   incomingFile,
   setIncomingFile,
   handleSendFile,
-  isPeerOnline
+  isPeerOnline,
+  recallMessage // ↩️ 用于向上层触发 Supabase 删除逻辑
 }) {
   const fileInputRef = useRef(null)
 
-  // 1. 💫 气泡功能与多 Emoji 专属状态集
-  const [hoveredMsgId, setHoveredMsgId] = useState(null)          // 当前悬停的消息 ID
+  // 💫 气泡功能与多 Emoji 专属状态集
+  const [hoveredMsgId, setHoveredMsgId] = useState(null)          // 当前鼠标悬停的消息 ID
   const [contextMenu, setContextMenu] = useState(null)            // 右键菜单位置及消息对象 { x, y, msg }
-  
-  // 核心数据结构重构：reactions: { [msgId]: { [emoji]: true/false } }
-  const [reactions, setReactions] = useState({})                  
-  const [localToast, setLocalToast] = useState(null)              // 自闭环轻量提示
+  const [reactions, setReactions] = useState({})                  // 消息表态映射表 { [msgId]: { [emoji]: boolean } }
+  const [localToast, setLocalToast] = useState(null)              // 组件内嵌轻量通知提示
 
   // 常用 Emoji 候选池
   const EMOJI_POOL = ['👍', '❤️', '😂', '😮', '😢', '🙏']
 
-  // 自闭环通知提示器
+  // 触发本地轻提示
   const triggerLocalToast = (text) => {
     setLocalToast(text)
     setTimeout(() => setLocalToast(null), 2200)
   }
 
-  // 监听点击自动关闭右键菜单
+  // 监听点击，自动关闭右键上下文菜单
   useEffect(() => {
     const closeMenu = () => setContextMenu(null)
     window.addEventListener('click', closeMenu)
     return () => window.removeEventListener('click', closeMenu)
   }, [])
 
-  // 🕒 顶部/分割线级时间格式化
+  // 🕒 顶部/分割线级时间格式化（支持今天、昨天、跨天识别）
   const formatTime = (isoString) => {
     if (!isoString) return ''
     const date = new Date(isoString)
@@ -67,7 +66,7 @@ export default function ChatArea({
     return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${minutes}`
   }
 
-  // ⏳ 气泡内部极简时间格式化
+  // ⏳ 气泡内部极简时间格式化（仅显示 时:分）
   const formatShortTime = (isoString) => {
     if (!isoString) return ''
     const date = new Date(isoString)
@@ -76,7 +75,7 @@ export default function ChatArea({
 
   const roomMeta = resolveRoomMeta(currentRoom)
 
-  // P2P 选取本地文件
+  // 处理 P2P 本地文件传输
   const onFileChange = (e) => {
     const file = e.target.files?.[0]
     if (file) handleSendFile(file)
@@ -86,14 +85,34 @@ export default function ChatArea({
   // ⚡ 气泡多功能交互处理器
   // ==========================================
   
-  // 复制消息文本
+  // ↩️ 判断某条消息当前是否允许被撤回（必须是自己发送的，且在 2 分钟内）
+  const canRecallMessage = (msg) => {
+    if (msg.sender_id !== myProfile?.id) return false 
+    if (!msg.created_at) return true // 正在发送转圈中的pending消息允许直接撤回
+    
+    const msgTime = new Date(msg.created_at).getTime()
+    const now = new Date().getTime()
+    return (now - msgTime) < 2 * 60 * 1000 // 120,000 毫秒（2分钟时限）
+  }
+
+  // 执行撤回动作
+  const handleRecall = (msg) => {
+    if (recallMessage) {
+      recallMessage(msg.id)
+      triggerLocalToast('↩️ 消息已成功撤回')
+    } else {
+      triggerLocalToast('⚠️ 父组件未挂载 recallMessage 方法')
+    }
+  }
+
+  // 复制消息文本到剪贴板
   const copyToClipboard = (text) => {
     if (typeof text !== 'string') return
     navigator.clipboard.writeText(text)
     triggerLocalToast('📋 消息已成功复制到剪贴板')
   }
 
-  // 多表情切换逻辑（支持同一条消息附加多个不同的表情）
+  // 切换 Emoji 表态（支持一条消息多表情并存）
   const toggleReaction = (msgId, emoji) => {
     setReactions(prev => {
       const msgReactions = prev[msgId] || {}
@@ -107,7 +126,7 @@ export default function ChatArea({
     })
   }
 
-  // 引用并回复该条消息
+  // 引用回复该条消息
   const handleReply = (msg) => {
     const senderName = msg.profiles?.display_name || msg.profiles?.username || '匿名'
     const cleanContent = typeof msg.content === 'string' ? msg.content : '[文件/媒体数据]'
@@ -118,15 +137,11 @@ export default function ChatArea({
     triggerLocalToast('💬 已将引用放入输入框')
   }
 
-  // 触发自定义右键菜单
+  // 唤起自定义右键菜单
   const handleContextMenu = (e, msg) => {
     e.preventDefault()
     e.stopPropagation()
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      msg
-    })
+    setContextMenu({ x: e.clientX, y: e.clientY, msg })
   }
 
   if (!currentRoom) {
@@ -187,20 +202,21 @@ export default function ChatArea({
         </div>
       )}
 
-      {/* 2. 消息流滚动渲染区域 */}
+      {/* 2. 消息流滚动区域 */}
       <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
         {messages.map((msg, index) => {
           const isMe = msg.sender_id === myProfile?.id
           const msgId = msg.id || `local-${index}`
           const isPending = msg.is_pending
 
+          // 智能时间分割线计算 (超过 5 分钟则插入一条时间线)
           const showTimeDivider = index === 0 || (() => {
             const prevMsg = messages[index - 1]
             if (!prevMsg || !prevMsg.created_at || !msg.created_at) return false
             return (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) > 5 * 60 * 1000 
           })()
 
-          // 获取该条消息当前已被激活的表情
+          // 提取当前消息被点亮的所有表情
           const activeEmojis = Object.keys(reactions[msgId] || {}).filter(emoji => reactions[msgId][emoji])
 
           return (
@@ -213,7 +229,7 @@ export default function ChatArea({
                 </div>
               )}
 
-              {/* 💬 气泡承载盒 */}
+              {/* 💬 气泡外框 */}
               <div 
                 style={{ 
                   display: 'flex', 
@@ -227,10 +243,10 @@ export default function ChatArea({
                 onMouseEnter={() => setHoveredMsgId(msgId)}
                 onMouseLeave={() => setHoveredMsgId(null)}
               >
-                {/* 头像 */}
+                {/* 发送者头像 */}
                 <img src={msg.profiles?.avatar_url || 'https://api.dicebear.com/7.x/identicon/svg'} alt="Avatar" style={{ width: '36px', height: '36px', borderRadius: '18px', backgroundColor: '#fff', border: `1px solid ${md3.outline}` }} />
 
-                {/* 气泡外围 */}
+                {/* 气泡及用户名 */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', position: 'relative' }}>
                   {!isMe && (
                     <span style={{ fontSize: '11px', color: md3.onSurfaceVariant, marginBottom: '4px', paddingLeft: '4px' }}>
@@ -240,7 +256,7 @@ export default function ChatArea({
 
                   <div style={{ position: 'relative' }}>
                     
-                    {/* ✨ 功能 A: 豪华版悬停表情+工具混合条 */}
+                    {/* ✨ 功能 A: 悬停豪华表情工具箱 */}
                     {hoveredMsgId === msgId && !isPending && (
                       <div style={{
                         position: 'absolute',
@@ -257,19 +273,13 @@ export default function ChatArea({
                         zIndex: 20,
                         animation: 'fadeIn 0.15s ease'
                       }}>
-                        {/* 常用 Emoji 托盘 */}
+                        {/* 快捷 Emoji 列表 */}
                         <div style={{ display: 'flex', gap: '5px', borderRight: `1px solid ${md3.outline}`, paddingRight: '8px' }}>
                           {EMOJI_POOL.map(emoji => (
                             <span
                               key={emoji}
                               onClick={() => toggleReaction(msgId, emoji)}
-                              style={{
-                                cursor: 'pointer',
-                                fontSize: '15px',
-                                transition: 'transform 0.1s ease',
-                                userSelect: 'none',
-                                display: 'inline-block'
-                              }}
+                              style={{ cursor: 'pointer', fontSize: '15px', transition: 'transform 0.1s ease', userSelect: 'none', display: 'inline-block' }}
                               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.3)'}
                               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                             >
@@ -278,18 +288,21 @@ export default function ChatArea({
                           ))}
                         </div>
 
-                        {/* 基础工具 */}
-                        <div style={{ display: 'flex', gap: '6px' }}>
+                        {/* 快速回复、复制、撤回键 */}
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                           <button onClick={() => handleReply(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="引用回复">💬</button>
                           <button onClick={() => copyToClipboard(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title="复制消息">📋</button>
+                          {canRecallMessage(msg) && (
+                            <button onClick={() => handleRecall(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px', color: md3.error || '#ff4d4f' }} title="撤回消息">↩️</button>
+                          )}
                         </div>
                       </div>
                     )}
 
                     {/* ✨ 消息实体气泡 */}
                     <div 
-                      onDoubleClick={() => toggleReaction(msgId, '❤️')} // 双击快捷点心
-                      onContextMenu={(e) => handleContextMenu(e, msg)}
+                      onDoubleClick={() => toggleReaction(msgId, '❤️')} // 双击快捷点红心
+                      onContextMenu={(e) => handleContextMenu(e, msg)}   // 右键自定义菜单
                       style={{ 
                         padding: '10px 14px', 
                         borderRadius: isMe ? '16px 4px 16px 16px' : '4px 16px 16px 16px', 
@@ -307,7 +320,7 @@ export default function ChatArea({
                       onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.98)' }}
                       onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
                     >
-                      {/* P2P 提示卡片 */}
+                      {/* P2P 提示卡片拦截 */}
                       {typeof msg.content === 'string' && msg.content.includes('"type":"p2p-file"') ? (() => {
                         try {
                           const fileData = JSON.parse(msg.content)
@@ -325,25 +338,15 @@ export default function ChatArea({
                         msg.content
                       )}
 
-                      {/* 时间微标 */}
+                      {/* 气泡微标时间 */}
                       <span style={{ display: 'block', fontSize: '9px', opacity: 0.6, textAlign: 'right', marginTop: '4px', userSelect: 'none', marginLeft: '12px' }}>
                         {formatShortTime(msg.created_at)} {isPending && ' (待同步)'}
                       </span>
                     </div>
 
-                    {/* ✨ 功能 B: 多 Emoji 并存并排徽章 */}
+                    {/* ✨ 功能 B: 并排多 Emoji 表态徽章胶囊 */}
                     {activeEmojis.length > 0 && (
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          bottom: '-14px',
-                          [isMe ? 'left' : 'right']: '12px',
-                          display: 'flex',
-                          gap: '4px',
-                          zIndex: 10,
-                          pointerEvents: 'auto'
-                        }}
-                      >
+                      <div style={{ position: 'absolute', bottom: '-14px', [isMe ? 'left' : 'right']: '12px', display: 'flex', gap: '4px', zIndex: 10 }}>
                         {activeEmojis.map(emoji => (
                           <div 
                             key={emoji}
@@ -379,7 +382,7 @@ export default function ChatArea({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 🛠️ 功能 C: 自定义右键弹出菜单（带 Emoji 置顶栏） */}
+      {/* 🛠️ 功能 C: 自定义右键菜单（置顶快速表态托盘） */}
       {contextMenu && (
         <div style={{
           position: 'fixed',
@@ -397,14 +400,8 @@ export default function ChatArea({
           animation: 'scaleIn 0.12s ease-out'
         }} onClick={(e) => e.stopPropagation()}>
           
-          {/* 快捷 Emoji 置顶行 */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-around',
-            padding: '4px 10px 8px 10px',
-            borderBottom: `1px solid ${md3.outline}`,
-            marginBottom: '4px'
-          }}>
+          {/* 快捷 Emoji 置顶面板 */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', padding: '4px 10px 8px 10px', borderBottom: `1px solid ${md3.outline}`, marginBottom: '4px' }}>
             {EMOJI_POOL.map(emoji => (
               <span
                 key={emoji}
@@ -413,13 +410,7 @@ export default function ChatArea({
                   toggleReaction(targetId, emoji)
                   setContextMenu(null)
                 }}
-                style={{
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.1s',
-                  padding: '2px',
-                  display: 'inline-block'
-                }}
+                style={{ fontSize: '16px', cursor: 'pointer', transition: 'transform 0.1s', padding: '2px', display: 'inline-block' }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.35)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
@@ -434,32 +425,40 @@ export default function ChatArea({
           <button onClick={() => { handleReply(contextMenu.msg); setContextMenu(null) }} style={{ background: 'none', border: 'none', padding: '8px 14px', textAlign: 'left', cursor: 'pointer', color: md3.onSurface, fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>💬</span> 引用回复
           </button>
+
+          {/* 只在属于自己且可撤回的消息上显示 */}
+          {canRecallMessage(contextMenu.msg) && (
+            <button 
+              onClick={() => { handleRecall(contextMenu.msg); setContextMenu(null) }} 
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                padding: '8px 14px', 
+                textAlign: 'left', 
+                cursor: 'pointer', 
+                color: md3.error || '#ff4d4f', 
+                fontSize: '12.5px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                borderTop: `1px solid ${md3.outline}`,
+                fontWeight: '600'
+              }}
+            >
+              <span>↩️</span> 撤回消息
+            </button>
+          )}
         </div>
       )}
 
-      {/* 4. 自闭环轻提示 */}
+      {/* 4. 自闭环轻通知气泡 */}
       {localToast && (
-        <div style={{
-          position: 'absolute',
-          top: '80px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          color: '#fff',
-          padding: '8px 16px',
-          borderRadius: '100px',
-          fontSize: '12px',
-          fontWeight: '500',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-          zIndex: 9999,
-          pointerEvents: 'none',
-          animation: 'fadeIn 0.2s'
-        }}>
+        <div style={{ position: 'absolute', top: '80px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0, 0, 0, 0.85)', color: '#fff', padding: '8px 16px', borderRadius: '100px', fontSize: '12px', fontWeight: '500', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', zIndex: 9999, pointerEvents: 'none', animation: 'fadeIn 0.2s' }}>
           {localToast}
         </div>
       )}
 
-      {/* 5. P2P 管道数据流状态面板 */}
+      {/* 5. P2P 文件状态传输面板 */}
       {(uploadProgress !== null || downloadProgress !== null || incomingFile) && (
         <div style={{ position: 'absolute', bottom: '80px', left: '20px', right: '20px', padding: '14px', borderRadius: '12px', backgroundColor: md3.surfaceContainerHigh, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: `1px solid ${md3.outline}`, display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 40 }}>
           {uploadProgress !== null && (
@@ -504,7 +503,7 @@ export default function ChatArea({
         </div>
       )}
 
-      {/* 6. 底部输入控制台 */}
+      {/* 6. 底部消息输入控制台 */}
       <div style={{ padding: '16px 20px', borderTop: `1px solid ${md3.outline}`, backgroundColor: md3.surfaceContainerHigh, zIndex: 5 }}>
         <form onSubmit={sendMessage} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
@@ -522,7 +521,7 @@ export default function ChatArea({
         </form>
       </div>
 
-      {/* 动画帧注入 */}
+      {/* 注入动画样式帧 */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translate(-50%, 10px); }
