@@ -1,35 +1,33 @@
 /* ==========================================================================
-   macOS Style Sheet - ChattingHub Overhaul
+   macOS Pro Theme - Supabase Version (Pure Minimalist, No Emojis)
    ========================================================================== */
 
 :root {
-  /* 苹果官方系统字体族 */
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   
-  /* 毛玻璃质感 & 半透明叠加色值 */
-  --mac-bg-glass: rgba(255, 255, 255, 0.72);
-  --mac-sidebar-glass: rgba(243, 243, 243, 0.6);
+  /* 毛玻璃与苹果微透底色 */
+  --mac-window-bg: rgba(255, 255, 255, 0.78);
+  --mac-sidebar-bg: rgba(246, 246, 246, 0.6);
   --mac-border: rgba(0, 0, 0, 0.1);
-  --mac-border-light: rgba(0, 0, 0, 0.05);
+  --mac-border-light: rgba(0, 0, 0, 0.06);
   
-  /* 交互色彩 */
+  /* macOS 强调色 */
   --mac-blue: #007aff;
-  --mac-blue-hover: #0063cc;
-  --mac-gray-bg: rgba(0, 0, 0, 0.04);
-  --mac-active-item: rgba(0, 0, 0, 0.08);
+  --mac-blue-hover: #0062cc;
+  --mac-item-hover: rgba(0, 0, 0, 0.05);
+  --mac-item-active: rgba(0, 0, 0, 0.08);
   
-  /* 文本色值 */
-  --text-main: #1d1d1f;
-  --text-secondary: #86868b;
+  /* 正规中性的文字层级色彩 */
+  --text-main: #1c1c1e;
+  --text-secondary: #8e8e93;
   --text-on-blue: #ffffff;
   
-  /* 经典红黄绿“红绿灯”控制键 */
-  --color-close: #ff5f56;
-  --color-minimize: #ffbd2e;
-  --color-maximize: #27c93f;
+  /* macOS 红黄绿窗口控制键 */
+  --light-close: #ff5f56;
+  --light-minimize: #ffbd2e;
+  --light-maximize: #27c93f;
 }
 
-/* 全局重置 */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -38,7 +36,6 @@
 
 body {
   font-family: var(--mac-font);
-  /* 使用高质感模糊渐变作为桌面背景图 */
   background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') no-repeat center center;
   background-size: cover;
   height: 100vh;
@@ -50,15 +47,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 独立应用窗口外壳 */
+/* 独立应用视窗 */
 .mac-window {
-  width: 960px;
+  width: 980px;
   height: 680px;
   border-radius: 12px;
-  background: var(--mac-bg-glass);
-  backdrop-filter: blur(35px) saturate(200%);
-  -webkit-backdrop-filter: blur(35px) saturate(200%);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.12);
+  background: var(--mac-window-bg);
+  backdrop-filter: blur(40px) saturate(210%);
+  -webkit-backdrop-filter: blur(40px) saturate(210%);
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -69,8 +66,8 @@ body {
   height: 52px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 0 18px;
+  background: rgba(255, 255, 255, 0.15);
   border-bottom: 1px solid var(--mac-border);
   position: relative;
   user-select: none;
@@ -81,19 +78,18 @@ body {
   gap: 8px;
 }
 
-/* 红绿灯圆圈 */
 .light {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 0.5px solid rgba(0, 0, 0, 0.12);
-  outline: none;
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  outline: none;
 }
 
-.close { background-color: var(--color-close); }
-.minimize { background-color: var(--color-minimize); }
-.maximize { background-color: var(--color-maximize); }
+.close { background-color: var(--light-close); }
+.minimize { background-color: var(--light-minimize); }
+.maximize { background-color: var(--light-maximize); }
 
 .mac-title {
   position: absolute;
@@ -101,32 +97,45 @@ body {
   transform: translateX(-50%);
   font-size: 13px;
   font-weight: 600;
-  color: #3a3a3a;
+  color: #323232;
 }
 
-/* 内部两栏布局 */
+/* 容器内部布局 */
 .mac-container {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
+/* SVG 矢量图标统一规范 */
+.mac-icon {
+  width: 16px;
+  height: 16px;
+  color: #555557;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.active .mac-icon {
+  color: var(--text-on-blue);
+}
+
 /* ==========================================================================
-   左侧侧边栏
+   左侧边栏 (Sidebar)
    ========================================================================== */
 .mac-sidebar {
   width: 260px;
-  background: var(--mac-sidebar-glass);
+  background: var(--mac-sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--mac-border);
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
+  padding: 14px 0;
 }
 
 .sidebar-header {
-  padding: 0 16px 16px 16px;
+  padding: 0 16px 14px 16px;
   border-bottom: 1px solid var(--mac-border-light);
 }
 
@@ -137,16 +146,16 @@ body {
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--mac-blue);
-  color: white;
+  color: var(--text-on-blue);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .user-info {
@@ -164,16 +173,15 @@ body {
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .status::before {
   content: '';
-  display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #28cd41;
+  background: #34c759;
 }
 
 .sidebar-menu {
@@ -187,24 +195,21 @@ body {
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  color: #333;
-  transition: background 0.15s ease;
+  color: #2c2c2e;
 }
 
-.menu-item:hover {
-  background: var(--mac-gray-bg);
-}
-
+.menu-item:hover { background: var(--mac-item-hover); }
 .menu-item.active {
-  background: var(--mac-active-item);
+  background: var(--mac-item-active);
   font-weight: 500;
 }
 
+/* 会话面板 */
 .chat-list-container {
   flex: 1;
   display: flex;
@@ -219,12 +224,10 @@ body {
   color: var(--text-secondary);
   padding: 8px 12px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.chat-list {
-  list-style: none;
-}
+.chat-list { list-style: none; }
 
 .chat-item {
   display: flex;
@@ -233,14 +236,10 @@ body {
   padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
-.chat-item:hover {
-  background: var(--mac-gray-bg);
-}
-
+.chat-item:hover { background: var(--mac-item-hover); }
 .chat-item.active {
   background: var(--mac-blue);
   color: var(--text-on-blue);
@@ -250,7 +249,7 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,7 +258,7 @@ body {
 }
 
 .chat-item.active .chat-avatar {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .chat-details {
@@ -269,60 +268,45 @@ body {
   overflow: hidden;
 }
 
-.chat-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-
+.chat-name { font-size: 13px; font-weight: 600; }
 .chat-preview {
   font-size: 11px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 2px;
 }
 
-.chat-item.active .chat-preview {
-  color: rgba(255, 255, 255, 0.8);
-}
+.chat-item.active .chat-preview { color: rgba(255, 255, 255, 0.8); }
 
 /* ==========================================================================
-   右侧聊天主窗口
+   右侧主聊天控制面板
    ========================================================================== */
 .mac-chat-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .chat-header {
   height: 52px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--mac-border);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.active-chat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.active-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.active-status {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
+.active-chat-info { display: flex; flex-direction: column; }
+.active-name { font-size: 14px; font-weight: 600; }
+.active-status { font-size: 11px; color: var(--text-secondary); }
 
 /* 消息流区域 */
 .chat-messages {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -333,76 +317,82 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  max-width: 70%;
+  max-width: 75%;
 }
 
-.message-received {
-  align-self: flex-start;
-}
-
+.message-received { align-self: flex-start; }
 .message-sent {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
 
 .msg-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
-/* 消息气泡设计 */
+/* 消息气泡架构 */
 .msg-bubble {
   padding: 10px 14px;
   border-radius: 16px;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
   word-break: break-word;
+  user-select: text;
 }
 
 .message-received .msg-bubble {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border: 0.5px solid rgba(0, 0, 0, 0.08);
   border-bottom-left-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .message-sent .msg-bubble {
   background: var(--mac-blue);
   color: var(--text-on-blue);
   border-bottom-right-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 74, 153, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 74, 153, 0.15);
 }
 
-/* 输入底栏 */
+/* 消息已被撤回的特殊视觉样式 */
+.message.recalled .msg-bubble {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--text-secondary) !important;
+  font-style: italic !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+}
+
+/* 消息底栏区 */
 .chat-input-bar {
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.2);
   border-top: 1px solid var(--mac-border);
 }
 
-/* 精致的小药丸输入框容器 */
 .input-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.85);
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 20px;
-  padding: 4px 6px 4px 12px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 4px 6px 4px 14px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .input-wrapper:focus-within {
   border-color: var(--mac-blue);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .input-wrapper input {
@@ -416,39 +406,74 @@ body {
   color: var(--text-main);
 }
 
-/* 按钮样式 */
+.input-wrapper input:disabled { cursor: not-allowed; }
+
 .action-btn {
   background: transparent;
   border: none;
-  font-size: 16px;
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.1s;
 }
 
-.action-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
+.action-btn:hover { background: rgba(0, 0, 0, 0.06); }
 
 .send-btn {
   background: var(--mac-blue);
   color: white;
   border: none;
   outline: none;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 16px;
   font-family: var(--mac-font);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
-.send-btn:hover {
-  background: var(--mac-blue-hover);
+.send-btn:hover { background: var(--mac-blue-hover); }
+.send-btn:disabled {
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   macOS 原生级右键菜单样式
+   ========================================================================== */
+.mac-context-menu {
+  position: fixed;
+  z-index: 9999;
+  width: 140px;
+  background: rgba(246, 246, 246, 0.88);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  padding: 5px;
+  display: none;
+  user-select: none;
+}
+
+.context-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.context-item:hover {
+  background: var(--mac-blue);
+  color: var(--text-on-blue);
+}
+
+.menu-destruct:hover {
+  background: #ff3b30 !important;
+  color: white !important;
 }

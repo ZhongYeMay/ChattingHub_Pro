@@ -10,12 +10,12 @@
   <!-- macOS 独立应用窗口 -->
   <div class="mac-window">
     
-    <!-- 顶部标题栏 (Titlebar) -->
+    <!-- 顶部标题栏 -->
     <header class="mac-titlebar">
       <div class="traffic-lights">
-        <button class="light close" aria-label="关闭"></button>
-        <button class="light minimize" aria-label="最小化"></button>
-        <button class="light maximize" aria-label="最大化"></button>
+        <button class="light close" id="btn-close" aria-label="关闭"></button>
+        <button class="light minimize" id="btn-minimize" aria-label="最小化"></button>
+        <button class="light maximize" id="btn-maximize" aria-label="最大化"></button>
       </div>
       <div class="mac-title">ChattingHub</div>
     </header>
@@ -23,32 +23,32 @@
     <!-- 主容器 -->
     <div class="mac-container">
       
-      <!-- 左侧边栏 (Sidebar) -->
+      <!-- 左侧边栏 -->
       <aside class="mac-sidebar">
-        <!-- 个人资料区 -->
+        <!-- 登录用户个人资料区 -->
         <div class="sidebar-header">
           <div class="user-profile">
-            <div class="avatar">A</div>
+            <div class="avatar" id="my-avatar">A</div>
             <div class="user-info">
-              <span class="username">あきひろ</span> <!-- 你的专属署名 -->
+              <span class="username" id="my-username">あきひろ</span>
               <span class="status online">在线</span>
             </div>
           </div>
         </div>
         
-        <!-- 导航菜单 -->
+        <!-- 侧边栏功能导航 (纯 SVG 图标) -->
         <nav class="sidebar-menu">
           <ul class="menu-list">
             <li class="menu-item active">
-              <span class="icon">💬</span>
+              <svg class="mac-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span class="label">当前聊天</span>
             </li>
             <li class="menu-item">
-              <span class="icon">👥</span>
+              <svg class="mac-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               <span class="label">联系人</span>
             </li>
             <li class="menu-item">
-              <span class="icon">⚙️</span>
+              <svg class="mac-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.6 1.5z"/></svg>
               <span class="label">设置</span>
             </li>
           </ul>
@@ -58,54 +58,46 @@
         <div class="chat-list-container">
           <div class="list-title">最近会话</div>
           <ul class="chat-list" id="chat-list">
-            <!-- 动态渲染的联系人会话放到这里 -->
-            <li class="chat-item active">
-              <div class="chat-avatar">S</div>
-              <div class="chat-details">
-                <span class="chat-name">Sakura</span>
-                <span class="chat-preview">今週末、暇？</span>
-              </div>
-            </li>
+            <!-- 聊天会话由 JS 动态渲染 -->
           </ul>
         </div>
       </aside>
 
-      <!-- 右侧聊天主窗口 (Chat Area) -->
+      <!-- 右侧聊天区域 -->
       <main class="mac-chat-area">
-        
-        <!-- 聊天头部 -->
+        <!-- 当前聊天对象状态 -->
         <div class="chat-header">
           <div class="active-chat-info">
-            <span class="active-name" id="current-chat-name">Sakura</span>
-            <span class="active-status">在线</span>
+            <span class="active-name" id="current-chat-name">未选择会话</span>
+            <span class="active-status" id="current-chat-status">离线</span>
           </div>
         </div>
 
-        <!-- 消息滚动区域 -->
+        <!-- 消息流动面板 -->
         <div class="chat-messages" id="message-container">
-          <!-- 接收到的消息 -->
-          <div class="message message-received">
-            <div class="msg-avatar">S</div>
-            <div class="msg-bubble">こんにちは！</div>
-          </div>
-          <!-- 发送的消息 -->
-          <div class="message message-sent">
-            <div class="msg-bubble">你好呀！</div>
-          </div>
+          <!-- 消息由 JS 动态填充 -->
         </div>
 
-        <!-- 输入区域 -->
+        <!-- 底栏消息输入框 -->
         <footer class="chat-input-bar">
           <div class="input-wrapper">
-            <button class="action-btn attach-btn" title="发送文件">📎</button>
-            <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off">
-            <button class="action-btn emoji-btn" title="表情">😀</button>
-            <button class="send-btn" id="send-btn">发送</button>
+            <button class="action-btn" title="添加附件">
+              <svg class="mac-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="text" id="msg-input" placeholder="输入消息..." autocomplete="off" disabled>
+            <button class="action-btn" title="发送图片">
+              <svg class="mac-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </button>
+            <button class="send-btn" id="send-btn" disabled>发送</button>
           </div>
         </footer>
-        
       </main>
     </div>
+  </div>
+
+  <!-- macOS 自定义右键快捷菜单 -->
+  <div class="mac-context-menu" id="custom-context-menu">
+    <div class="context-item menu-destruct" id="menu-action-recall">撤回消息</div>
   </div>
 </body>
 </html>
