@@ -12,7 +12,7 @@ export default function App() {
   const [msg, setMsg] = useState({ text: '', type: '' })
 
   // 💡 初始化及监听本地语言偏好
-  const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')[cite: 1]
+  const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')
   useEffect(() => {
     localStorage.setItem('cyber_lang', lang)[cite: 1]
   }, [lang])

@@ -22,7 +22,7 @@ export default function ChatApp() {
   const messagesEndRef = useRef(null)
 
   // 💡 声明响应式全局多语言状态并监听本地偏好[cite: 3]
-  const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')[cite: 3]
+  const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')
   useEffect(() => {
     localStorage.setItem('cyber_lang', lang)[cite: 3]
   }, [lang])
