@@ -300,7 +300,7 @@ export default function ChatArea({
                           <button onClick={() => handleReply(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title={t(lang, 'reply')}>💬</button> {/* 👈 翻译[cite: 2] */}
                           <button onClick={() => copyToClipboard(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title={t(lang, 'copyText')}>📋</button> {/* 👈 翻译[cite: 2] */}
                           {canRecallMessage(msg) && (
-                            <button onClick={() => handleRecall(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px', color: md3.error || '#ff4d4f' }} title={t(lang, 'recall')}>↩️</button> {/* 👈 翻译[cite: 2] */}
+                            <button onClick={() => handleRecall(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px', color: md3.error || '#ff4d4f' }} title={t(lang, 'recall')}>↩️</button> /* 👈 翻译[cite: 2] */
                           )}
                         </div>
                       </div>

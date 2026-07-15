@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
-import { t } from './utils/i18n' // 👈 导入多语言引擎[cite: 1]
+import { t } from './utils/i18n' // 👈 导入多语言引擎
 
 export default function App() {
   const [isRegister, setIsRegister] = useState(false)
@@ -14,7 +14,7 @@ export default function App() {
   // 💡 初始化及监听本地语言偏好
   const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')
   useEffect(() => {
-    localStorage.setItem('cyber_lang', lang)[cite: 1]
+    localStorage.setItem('cyber_lang', lang)
   }, [lang])
 
   useEffect(() => {
@@ -29,10 +29,10 @@ export default function App() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    setMsg({ text: t(lang, 'loggingIn'), type: 'info' }) // 👈 翻译提示[cite: 1]
+    setMsg({ text: t(lang, 'loggingIn'), type: 'info' }) // 👈 翻译提示
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setMsg({ text: `${t(lang, 'loginBtn')}${t(lang, 'inviteFail')}${error.message}`, type: 'error' })[cite: 1]
+      setMsg({ text: `${t(lang, 'loginBtn')}${t(lang, 'inviteFail')}${error.message}`, type: 'error' })
     } else if (data.session) {
       window.location.replace('./chat.html')
     }
@@ -40,8 +40,8 @@ export default function App() {
 
   const handleRegister = async (e) => {
     e.preventDefault()
-    if (!username.trim()) return setMsg({ text: t(lang, 'enterUsernamePlh'), type: 'error' })[cite: 1]
-    setMsg({ text: t(lang, 'registering'), type: 'info' }) // 👈 翻译提示[cite: 1]
+    if (!username.trim()) return setMsg({ text: t(lang, 'enterUsernamePlh'), type: 'error' })
+    setMsg({ text: t(lang, 'registering'), type: 'info' }) // 👈 翻译提示
 
     const { data, error: authError } = await supabase.auth.signUp({ email, password })
     if (authError) return setMsg({ text: authError.message, type: 'error' })
@@ -149,7 +149,7 @@ export default function App() {
         </div>
         
         <h2 style={{ textAlign: 'center', fontWeight: '500', marginBottom: '24px', color: md3.onSurface, marginTop: 0, letterSpacing: '0.5px' }}>
-          {isRegister ? t(lang, 'joinTitle') : t(lang, 'secureLogin')} {/* 👈 翻译词条[cite: 1] */}
+          {isRegister ? t(lang, 'joinTitle') : t(lang, 'secureLogin')} {/* 👈 翻译词条 */}
         </h2>
         
         {msg.text && (
@@ -161,26 +161,26 @@ export default function App() {
         <form onSubmit={isRegister ? handleRegister : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {isRegister && (
             <>
-              <input type="text" placeholder={t(lang, 'displayNamePlh')} required value={displayName} onChange={e => setDisplayName(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条[cite: 1] */}
-              <input type="text" placeholder={t(lang, 'usernamePlh')} required value={username} onChange={e => setUsername(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条[cite: 1] */}
+              <input type="text" placeholder={t(lang, 'displayNamePlh')} required value={displayName} onChange={e => setDisplayName(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条 */}
+              <input type="text" placeholder={t(lang, 'usernamePlh')} required value={username} onChange={e => setUsername(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条 */}
               
               <div style={{ border: `1px dashed ${md3.outline}`, borderRadius: '14px', padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.5)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: md3.onSurfaceVariant, fontWeight: '500' }}>{t(lang, 'uploadAvatar')}</span> {/* 👈 翻译词条[cite: 1] */}
+                <span style={{ fontSize: '13px', color: md3.onSurfaceVariant, fontWeight: '500' }}>{t(lang, 'uploadAvatar')}</span> {/* 👈 翻译词条 */}
                 <input type="file" accept="image/*" onChange={e => setAvatarFile(e.target.files[0])} style={{ fontSize: '12px', color: md3.onSurface }} />
               </div>
             </>
           )}
           
-          <input type="email" placeholder={t(lang, 'emailPlh')} required value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条[cite: 1] */}
-          <input type="password" placeholder={t(lang, 'passwordPlh')} required value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条[cite: 1] */}
+          <input type="email" placeholder={t(lang, 'emailPlh')} required value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条 */}
+          <input type="password" placeholder={t(lang, 'passwordPlh')} required value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '14px', backgroundColor: 'rgba(255, 255, 255, 0.7)', color: md3.onSurface }} /> {/* 👈 翻译词条 */}
           
           <button type="submit" style={{ padding: '14px', background: md3.primary, color: '#fff', border: 'none', borderRadius: '100px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '8px', boxShadow: '0 4px 12px rgba(0, 97, 164, 0.3)' }}>
-            {isRegister ? t(lang, 'submitRegister') : t(lang, 'loginBtn')} {/* 👈 翻译词条[cite: 1] */}
+            {isRegister ? t(lang, 'submitRegister') : t(lang, 'loginBtn')} {/* 👈 翻译词条 */}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: md3.onSurfaceVariant, marginBottom: 0 }}>
-          {isRegister ? t(lang, 'hasAccount') : t(lang, 'noAccount')}{' '} {/* 👈 翻译词条[cite: 1] */}
+          {isRegister ? t(lang, 'hasAccount') : t(lang, 'noAccount')}{' '} {/* 👈 翻译词条 */}
           <span 
             onClick={() => { 
               setIsRegister(!isRegister); 
@@ -196,7 +196,7 @@ export default function App() {
               userSelect: 'none'
             }}
           >
-            {isRegister ? t(lang, 'loginNow') : t(lang, 'registerNow')} {/* 👈 翻译词条[cite: 1] */}
+            {isRegister ? t(lang, 'loginNow') : t(lang, 'registerNow')} {/* 👈 翻译词条 */}
           </span>
         </p>
       </div>

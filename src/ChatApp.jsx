@@ -8,7 +8,7 @@ import Taskbar from './components/Taskbar'
 import SettingsWindow from './components/SettingsWindow'
 // 导入端到端加解密辅助函数
 import { encryptMessage, decryptMessage } from './utils/cryptoHelper'
-import { t } from './utils/i18n' // 👈 导入多语言翻译词条[cite: 3]
+import { t } from './utils/i18n' // 👈 导入多语言翻译词条
 
 export default function ChatApp() {
   // 1. 核心数据与状态总线
@@ -21,10 +21,10 @@ export default function ChatApp() {
   const [networkError, setNetworkError] = useState(null)
   const messagesEndRef = useRef(null)
 
-  // 💡 声明响应式全局多语言状态并监听本地偏好[cite: 3]
+  // 💡 声明响应式全局多语言状态并监听本地偏好
   const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')
   useEffect(() => {
-    localStorage.setItem('cyber_lang', lang)[cite: 3]
+    localStorage.setItem('cyber_lang', lang)
   }, [lang])
 
   // 对端用户实时在线状态监听器
@@ -102,7 +102,7 @@ export default function ChatApp() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) window.location.replace('./'); else initChatUser(session.user)
     }).catch(err => {
-      setNetworkError(t(lang, 'networkErrorTitle')) // 👈 翻译[cite: 3]
+      setNetworkError(t(lang, 'networkErrorTitle')) // 👈 翻译
       setLoading(false)
     })
   }
@@ -152,7 +152,7 @@ export default function ChatApp() {
     if (pendingMessages.length === 0) return
     await supabase.from('messages').insert(pendingMessages.map(msg => ({ room_id: roomId, sender_id: myProfile.id, content: msg.encryptedContent, created_at: msg.timestamp })))
     localStorage.removeItem(queueKey)
-    triggerToast(t(lang, 'syncSuccessToast'), 'success') // 👈 翻译[cite: 3]
+    triggerToast(t(lang, 'syncSuccessToast'), 'success') // 👈 翻译
   }
 
   // =======================================================
@@ -214,17 +214,17 @@ export default function ChatApp() {
           size: expectedFileInfo.current.size
         })
         setDownloadProgress(null)
-        triggerToast(t(lang, 'p2pReceivedSuccess') + expectedFileInfo.current.name, 'success') // 👈 翻译[cite: 3]
+        triggerToast(t(lang, 'p2pReceivedSuccess') + expectedFileInfo.current.name, 'success') // 👈 翻译
       }
     }
   }
 
   const handleSendFile = async (file) => {
     if (!currentRoom || !isPeerOnline) {
-      return triggerToast(t(lang, 'p2pFailOffline'), 'error') // 👈 翻译[cite: 3]
+      return triggerToast(t(lang, 'p2pFailOffline'), 'error') // 👈 翻译
     }
 
-    triggerToast(t(lang, 'p2pConnecting'), 'info') // 👈 翻译[cite: 3]
+    triggerToast(t(lang, 'p2pConnecting'), 'info') // 👈 翻译
     const pc = createPeerConnection(currentRoom.id)
     const channel = pc.createDataChannel('cyber-p2p-file')
     dataChannelRef.current = channel
@@ -426,7 +426,7 @@ export default function ChatApp() {
 
   const submitCreateGroup = async (e) => {
     e.preventDefault()
-    if (!newGroupName.trim()) return triggerToast(t(lang, 'enterGroupPlh'), 'error') // 👈 翻译[cite: 3]
+    if (!newGroupName.trim()) return triggerToast(t(lang, 'enterGroupPlh'), 'error') // 👈 翻译
     const name = newGroupName.trim(); setIsCreatingGroup(false); setNewGroupName('')
     const { data: room, error } = await supabase.from('rooms').insert([{ name: name, is_group: true }]).select().single()
     if (error) return triggerToast('Failed: ' + error.message, 'error')
@@ -434,27 +434,27 @@ export default function ChatApp() {
     if (room) { 
       await supabase.from('room_members').insert([{ room_id: room.id, user_id: myProfile.id }])
       fetchRooms() 
-      triggerToast(t(lang, 'groupCreatedSuccess', { name }), 'success') // 👈 翻译[cite: 3]
+      triggerToast(t(lang, 'groupCreatedSuccess', { name }), 'success') // 👈 翻译
     }
   }
 
   const submitInviteMember = async (e) => {
     e.preventDefault()
-    if (!inviteUsername.trim()) return triggerToast(t(lang, 'enterUsernamePlh'), 'error') // 👈 翻译[cite: 3]
+    if (!inviteUsername.trim()) return triggerToast(t(lang, 'enterUsernamePlh'), 'error') // 👈 翻译
     const targetName = inviteUsername.trim().toLowerCase(); setIsInviting(false); setInviteUsername('')
     
     const { data: targetProfile, error } = await supabase.from('profiles').select('id, username, display_name').eq('username', targetName).maybeSingle()
-    if (error || !targetProfile) return triggerToast(t(lang, 'userNotFound'), 'error') // 👈 翻译[cite: 3]
+    if (error || !targetProfile) return triggerToast(t(lang, 'userNotFound'), 'error') // 👈 翻译
     
     const { data: alreadyMember } = await supabase.from('room_members').select('id').eq('room_id', currentRoom.id).eq('user_id', targetProfile.id).maybeSingle()
-    if (alreadyMember) return triggerToast(t(lang, 'alreadyInGroup'), 'info') // 👈 翻译[cite: 3]
+    if (alreadyMember) return triggerToast(t(lang, 'alreadyInGroup'), 'info') // 👈 翻译
 
     const { error: insertErr } = await supabase.from('room_members').insert([{ room_id: currentRoom.id, user_id: targetProfile.id }])
     if (insertErr) {
       console.error("添加成员失败日志:", insertErr)
-      triggerToast(t(lang, 'inviteFail') + insertErr.message, 'error') // 👈 翻译[cite: 3]
+      triggerToast(t(lang, 'inviteFail') + insertErr.message, 'error') // 👈 翻译
     } else { 
-      triggerToast(t(lang, 'inviteSuccess', { name: targetProfile.display_name }), 'success') // 👈 翻译[cite: 3]
+      triggerToast(t(lang, 'inviteSuccess', { name: targetProfile.display_name }), 'success') // 👈 翻译
       fetchRooms() 
     }
   }
@@ -488,7 +488,7 @@ export default function ChatApp() {
       const queueKey = `offline_queue_${currentRoom.id}`
       const currentQueue = JSON.parse(localStorage.getItem(queueKey) || '[]')
       localStorage.setItem(queueKey, JSON.stringify([...currentQueue, { encryptedContent: encryptedText, timestamp }]))
-      triggerToast(t(lang, 'peerOfflineToast'), 'info') // 👈 翻译[cite: 3]
+      triggerToast(t(lang, 'peerOfflineToast'), 'info') // 👈 翻译
       setMessages(prev => [...prev, { id: Math.random(), room_id: currentRoom.id, sender_id: myProfile.id, content: rawText, created_at: timestamp, is_pending: true, profiles: myProfile }])
     }
   }
@@ -501,7 +501,7 @@ export default function ChatApp() {
       const { data: ec } = await supabase.from('room_members').select('room_id, rooms!inner(id, name, is_group)').in('room_id', ids).eq('user_id', tu.id).eq('rooms.is_group', false).maybeSingle()
       if (ec?.rooms) { const fr = await fetchRooms(); setCurrentRoom(fr.find(r => r.id === ec.room_id) || ec.rooms); return }
     }
-    const { data: nr } = await supabase.from('rooms').insert([{ name: tu.username || t(lang, 'privateChat'), is_group: false }]).select().single() // 👈 翻译[cite: 3]
+    const { data: nr } = await supabase.from('rooms').insert([{ name: tu.username || t(lang, 'privateChat'), is_group: false }]).select().single() // 👈 翻译
     if (nr) {
       await supabase.from('room_members').insert([{ room_id: nr.id, user_id: myProfile.id }, { room_id: nr.id, user_id: tu.id }])
       await fetchRooms()
@@ -549,7 +549,7 @@ export default function ChatApp() {
     return { position: 'absolute', width: `${dimensions.width}px`, height: `${dimensions.height}px`, left: `${dimensions.left}px`, top: `${dimensions.top}px`, borderRadius: '12px', backgroundColor: md3.surface, boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255, 255, 255, 0.35)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 10, transition: (isDragging || resizeType) ? 'none' : 'all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)' }
   }
 
-  // 💡 系统加载提示翻译[cite: 3]
+  // 💡 系统加载提示翻译
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', color: '#fff' }}>{t(lang, 'initializing')}</div>
 
   return (
@@ -571,9 +571,9 @@ export default function ChatApp() {
             {networkError ? (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '40px', backgroundColor: md3.surfaceContainerLow, color: md3.onSurface, textAlign: 'center' }}>
                 <div style={{ fontSize: '54px' }}>Error</div>
-                <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px', color: '#dc2626' }}>{t(lang, 'networkErrorTitle')}</h3> {/* 👈 翻译[cite: 3] */}
+                <h3 style={{ margin: 0, fontWeight: '700', fontSize: '18px', color: '#dc2626' }}>{t(lang, 'networkErrorTitle')}</h3> {/* 👈 翻译 */}
                 <p style={{ margin: 0, fontSize: '13px', maxWidth: '500px', opacity: 0.8 }}>{networkError}</p>
-                <button onClick={checkSessionAndInit} style={{ padding: '10px 24px', background: md3.primary, color: '#fff', border: 'none', borderRadius: '100px', fontWeight: '600', cursor: 'pointer' }}>{t(lang, 'reinit')}</button> {/* 👈 翻译[cite: 3] */}
+                <button onClick={checkSessionAndInit} style={{ padding: '10px 24px', background: md3.primary, color: '#fff', border: 'none', borderRadius: '100px', fontWeight: '600', cursor: 'pointer' }}>{t(lang, 'reinit')}</button> {/* 👈 翻译 */}
               </div>
             ) : (
               <>
@@ -593,8 +593,8 @@ export default function ChatApp() {
                   currentRoom={currentRoom} myProfile={myProfile} messages={messages} resolveRoomMeta={resolveRoomMeta} messagesEndRef={messagesEndRef} newMessage={newMessage} setNewMessage={setNewMessage} sendMessage={sendMessage} isInviting={isInviting} setIsInviting={setIsInviting} inviteUsername={inviteUsername} setInviteUsername={setInviteUsername} submitInviteMember={submitInviteMember} md3={md3} 
                   uploadProgress={uploadProgress} downloadProgress={downloadProgress} incomingFile={incomingFile} setIncomingFile={setIncomingFile} handleSendFile={handleSendFile} isPeerOnline={isPeerOnline}
                   recallMessage={recallMessage} 
-                  lang={lang}      // 👈 完美连通属性[cite: 3]
-                  setLang={setLang}    // 👈 完美连通属性[cite: 3]
+                  lang={lang}      // 👈 完美连通属性
+                  setLang={setLang}    // 👈 完美连通属性
                 />
               </>
             )}
