@@ -1,31 +1,31 @@
 /* ==========================================================================
-   macOS Pro Theme - Supabase Version (Pure Minimalist, No Emojis)
+   macOS 15 (Sequoia) Theme - Supabase Version (Pure Minimalist, No Emojis)
    ========================================================================== */
 
 :root {
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
   
   /* 毛玻璃与苹果微透底色 */
-  --mac-window-bg: rgba(255, 255, 255, 0.78);
-  --mac-sidebar-bg: rgba(246, 246, 246, 0.6);
-  --mac-border: rgba(0, 0, 0, 0.1);
-  --mac-border-light: rgba(0, 0, 0, 0.06);
+  --mac-window-bg: rgba(246, 246, 248, 0.78);
+  --mac-sidebar-bg: rgba(0, 0, 0, 0.035);
+  --mac-border: rgba(0, 0, 0, 0.08);
+  --mac-border-light: rgba(0, 0, 0, 0.05);
   
   /* macOS 强调色 */
   --mac-blue: #007aff;
   --mac-blue-hover: #0062cc;
   --mac-item-hover: rgba(0, 0, 0, 0.05);
-  --mac-item-active: rgba(0, 0, 0, 0.08);
+  --mac-item-active: rgba(0, 0, 0, 0.09);
   
   /* 正规中性的文字层级色彩 */
-  --text-main: #1c1c1e;
-  --text-secondary: #8e8e93;
+  --text-main: #1d1d1f;
+  --text-secondary: #86868b;
   --text-on-blue: #ffffff;
   
   /* macOS 红黄绿窗口控制键 */
-  --light-close: #ff5f56;
-  --light-minimize: #ffbd2e;
-  --light-maximize: #27c93f;
+  --light-close: #ff5f57;
+  --light-minimize: #febc2e;
+  --light-maximize: #28c840;
 }
 
 * {
@@ -51,11 +51,11 @@ body {
 .mac-window {
   width: 980px;
   height: 680px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--mac-window-bg);
-  backdrop-filter: blur(40px) saturate(210%);
-  -webkit-backdrop-filter: blur(40px) saturate(210%);
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.45);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -67,7 +67,9 @@ body {
   display: flex;
   align-items: center;
   padding: 0 18px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(246, 246, 248, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--mac-border);
   position: relative;
   user-select: none;
@@ -287,7 +289,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .chat-header {
@@ -296,7 +300,9 @@ body {
   align-items: center;
   padding: 0 24px;
   border-bottom: 1px solid var(--mac-border);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .active-chat-info { display: flex; flex-direction: column; }
@@ -352,14 +358,14 @@ body {
   background: rgba(255, 255, 255, 0.92);
   border: 0.5px solid rgba(0, 0, 0, 0.08);
   border-bottom-left-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .message-sent .msg-bubble {
   background: var(--mac-blue);
   color: var(--text-on-blue);
   border-bottom-right-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 74, 153, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 74, 153, 0.15);
 }
 
 /* 消息已被撤回的特殊视觉样式 */
@@ -375,7 +381,9 @@ body {
 /* 消息底栏区 */
 .chat-input-bar {
   padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--mac-border);
 }
 

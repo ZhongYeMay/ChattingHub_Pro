@@ -132,24 +132,24 @@ export default function ChatArea({
 
   if (!currentRoom) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: md3.onSurfaceVariant, backgroundColor: md3.surfaceContainerLow }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: md3.onSurfaceVariant, backgroundColor: md3.surfaceContainerLow, backdropFilter: md3.vibrancyLight, WebkitBackdropFilter: md3.vibrancyLight }}>
         <div style={{ fontSize: '64px', marginBottom: '16px' }}>💬</div>
-        <h3 style={{ margin: 0, fontWeight: '600' }}>{t(lang, 'e2eTitle')}</h3> {/* 👈 翻译[cite: 2] */}
+        <h3 style={{ margin: 0, fontWeight: '600', color: md3.onSurface }}>{t(lang, 'e2eTitle')}</h3> {/* 👈 翻译[cite: 2] */}
         <p style={{ margin: '8px 0 0 0', fontSize: '13px', opacity: 0.7 }}>{t(lang, 'e2eSubtitle')}</p> {/* 👈 翻译[cite: 2] */}
       </div>
     )
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: md3.surfaceContainerLow, position: 'relative', height: '100%' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: md3.surfaceContainerLow, backdropFilter: md3.vibrancyLight, WebkitBackdropFilter: md3.vibrancyLight, position: 'relative', height: '100%' }}>
       
       {/* 1. 顶部群组/联系人元数据栏 */}
-      <div style={{ height: '64px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${md3.outline}`, backgroundColor: md3.surfaceContainerHigh, zIndex: 5 }}>
+      <div style={{ height: '64px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${md3.separator}`, backgroundColor: md3.surfaceContainerHigh, backdropFilter: md3.vibrancyLight, WebkitBackdropFilter: md3.vibrancyLight, zIndex: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {roomMeta.avatar ? (
-            <img src={roomMeta.avatar} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '20px', objectFit: 'cover' }} />
+            <img src={roomMeta.avatar} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
-            <div style={{ width: '40px', height: '40px', borderRadius: '20px', backgroundColor: md3.primary, color: md3.onPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: md3.primary, color: md3.onPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px' }}>
               {roomMeta.name ? roomMeta.name.replace('@', '').slice(0, 1).toUpperCase() : 'G'}
             </div>
           )}
@@ -158,7 +158,7 @@ export default function ChatArea({
             <div style={{ fontWeight: '600', color: md3.onSurface, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {roomMeta.name}
               {!currentRoom.is_group && (
-                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isPeerOnline ? '#22c55e' : '#94a3b8' }} />
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isPeerOnline ? md3.success : md3.onSurfaceVariant }} />
               )}
             </div>
             <div style={{ fontSize: '11px', color: md3.onSurfaceVariant, opacity: 0.8 }}>
@@ -178,7 +178,7 @@ export default function ChatArea({
             style={{
               padding: '6px 10px',
               borderRadius: '8px',
-              border: `1px solid ${md3.outline}`,
+              border: 'none',
               backgroundColor: md3.surfaceContainer,
               color: md3.onSurface,
               fontSize: '12px',
@@ -203,10 +203,10 @@ export default function ChatArea({
 
       {/* 邀请模态框 */}
       {isInviting && (
-        <div style={{ position: 'absolute', top: '70px', right: '20px', width: '280px', padding: '16px', borderRadius: '12px', backgroundColor: md3.surfaceContainerHigh, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', border: `1px solid ${md3.outline}`, zIndex: 50 }}>
+        <div style={{ position: 'absolute', top: '70px', right: '20px', width: '280px', padding: '16px', borderRadius: '12px', backgroundColor: md3.surfaceContainerHigh, backdropFilter: md3.vibrancy, WebkitBackdropFilter: md3.vibrancy, boxShadow: '0 12px 36px rgba(0,0,0,0.2)', border: `1px solid ${md3.outline}`, zIndex: 50 }}>
           <form onSubmit={submitInviteMember} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <span style={{ fontSize: '12px', fontWeight: '600', color: md3.onSurface }}>{t(lang, 'invitePlh')}</span> {/* 👈 翻译[cite: 2] */}
-            <input type="text" value={inviteUsername} onChange={(e) => setInviteUsername(e.target.value)} placeholder={t(lang, 'inviteHint')} style={{ padding: '8px 12px', borderRadius: '8px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '13px', backgroundColor: md3.surface }} /> {/* 👈 翻译[cite: 2] */}
+            <input type="text" value={inviteUsername} onChange={(e) => setInviteUsername(e.target.value)} placeholder={t(lang, 'inviteHint')} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', outline: 'none', fontSize: '13px', backgroundColor: md3.surfaceContainer, color: md3.onSurface }} /> {/* 👈 翻译[cite: 2] */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => setIsInviting(false)} style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: 'transparent', color: md3.onSurface, fontSize: '12px', cursor: 'pointer' }}>{t(lang, 'cancel')}</button> {/* 👈 翻译[cite: 2] */}
               <button type="submit" style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: md3.primary, color: md3.onPrimary, fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>{t(lang, 'add')}</button> {/* 👈 翻译[cite: 2] */}
@@ -235,7 +235,7 @@ export default function ChatArea({
               
               {/* 📅 时间分割线 */}
               {showTimeDivider && (
-                <div style={{ alignSelf: 'center', margin: '12px 0 16px 0', padding: '4px 10px', borderRadius: '100px', backgroundColor: md3.outline, color: md3.onSurface, fontSize: '11px', fontWeight: '500', opacity: 0.7 }}>
+                <div style={{ alignSelf: 'center', margin: '12px 0 16px 0', padding: '3px 10px', borderRadius: '100px', backgroundColor: md3.surfaceContainer, color: md3.onSurfaceVariant, fontSize: '11px', fontWeight: '500' }}>
                   {formatTime(msg.created_at)}
                 </div>
               )}
@@ -254,7 +254,7 @@ export default function ChatArea({
                 onMouseEnter={() => setHoveredMsgId(msgId)}
                 onMouseLeave={() => setHoveredMsgId(null)}
               >
-                <img src={msg.profiles?.avatar_url || 'https://api.dicebear.com/7.x/identicon/svg'} alt="Avatar" style={{ width: '36px', height: '36px', borderRadius: '18px', backgroundColor: '#fff', border: `1px solid ${md3.outline}` }} />
+                <img src={msg.profiles?.avatar_url || 'https://api.dicebear.com/7.x/identicon/svg'} alt="Avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: md3.surfaceContainer, border: `1px solid ${md3.outline}` }} />
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', position: 'relative' }}>
                   {!isMe && (
@@ -269,16 +269,18 @@ export default function ChatArea({
                     {hoveredMsgId === msgId && !isPending && (
                       <div style={{
                         position: 'absolute',
-                        top: '-36px',
+                        top: '-38px',
                         [isMe ? 'left' : '0']: '0',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         backgroundColor: md3.surfaceContainerHigh,
+                        backdropFilter: md3.vibrancy,
+                        WebkitBackdropFilter: md3.vibrancy,
                         border: `1px solid ${md3.outline}`,
-                        borderRadius: '24px',
-                        padding: '3px 10px',
-                        boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                        borderRadius: '100px',
+                        padding: '4px 12px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
                         zIndex: 20,
                         animation: 'fadeIn 0.15s ease'
                       }}>
@@ -300,7 +302,7 @@ export default function ChatArea({
                           <button onClick={() => handleReply(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title={t(lang, 'reply')}>💬</button> {/* 👈 翻译[cite: 2] */}
                           <button onClick={() => copyToClipboard(msg.content)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px' }} title={t(lang, 'copyText')}>📋</button> {/* 👈 翻译[cite: 2] */}
                           {canRecallMessage(msg) && (
-                            <button onClick={() => handleRecall(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px', color: md3.error || '#ff4d4f' }} title={t(lang, 'recall')}>↩️</button> /* 👈 翻译[cite: 2] */
+                            <button onClick={() => handleRecall(msg)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '13px', color: md3.error }} title={t(lang, 'recall')}>↩️</button> /* 👈 翻译[cite: 2] */
                           )}
                         </div>
                       </div>
@@ -311,13 +313,13 @@ export default function ChatArea({
                       onDoubleClick={() => toggleReaction(msgId, '❤️')} 
                       onContextMenu={(e) => handleContextMenu(e, msg)}   
                       style={{ 
-                        padding: '10px 14px', 
-                        borderRadius: isMe ? '16px 4px 16px 16px' : '4px 16px 16px 16px', 
-                        backgroundColor: isMe ? md3.primary : md3.surfaceContainer, 
-                        color: isMe ? md3.onPrimary : md3.onSurface, 
+                        padding: '9px 14px', 
+                        borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', 
+                        backgroundColor: isMe ? md3.primary : md3.bubbleReceived, 
+                        color: isMe ? md3.onPrimary : md3.bubbleReceivedText, 
                         fontSize: '13.5px', 
                         lineHeight: '1.5', 
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)', 
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.06)', 
                         wordBreak: 'break-all',
                         cursor: 'pointer',
                         userSelect: 'text',
@@ -394,14 +396,16 @@ export default function ChatArea({
           top: `${contextMenu.y}px`,
           left: `${contextMenu.x}px`,
           backgroundColor: md3.surfaceContainerHigh,
+          backdropFilter: md3.vibrancy,
+          WebkitBackdropFilter: md3.vibrancy,
           border: `1px solid ${md3.outline}`,
           borderRadius: '12px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.22)',
           zIndex: 1000,
-          padding: '8px 0',
+          padding: '6px 0',
           display: 'flex',
           flexDirection: 'column',
-          minWidth: '160px',
+          minWidth: '170px',
           animation: 'scaleIn 0.12s ease-out'
         }} onClick={(e) => e.stopPropagation()}>
           
@@ -439,7 +443,7 @@ export default function ChatArea({
                 padding: '8px 14px', 
                 textAlign: 'left', 
                 cursor: 'pointer', 
-                color: md3.error || '#ff4d4f', 
+                color: md3.error, 
                 fontSize: '12.5px', 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -456,21 +460,21 @@ export default function ChatArea({
 
       {/* 4. 轻通知气泡 */}
       {localToast && (
-        <div style={{ position: 'absolute', top: '80px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0, 0, 0, 0.85)', color: '#fff', padding: '8px 16px', borderRadius: '100px', fontSize: '12px', fontWeight: '500', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', zIndex: 9999, pointerEvents: 'none', animation: 'fadeIn 0.2s' }}>
+        <div style={{ position: 'absolute', top: '80px', left: '50%', transform: 'translateX(-50%)', backgroundColor: md3.isDark ? 'rgba(40,40,42,0.9)' : 'rgba(0,0,0,0.82)', color: '#fff', padding: '8px 16px', borderRadius: '100px', fontSize: '12px', fontWeight: '500', boxShadow: '0 6px 20px rgba(0,0,0,0.25)', zIndex: 9999, pointerEvents: 'none', animation: 'fadeIn 0.2s', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
           {localToast}
         </div>
       )}
 
       {/* 5. P2P 文件传输 */}
       {(uploadProgress !== null || downloadProgress !== null || incomingFile) && (
-        <div style={{ position: 'absolute', bottom: '80px', left: '20px', right: '20px', padding: '14px', borderRadius: '12px', backgroundColor: md3.surfaceContainerHigh, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: `1px solid ${md3.outline}`, display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 40 }}>
+        <div style={{ position: 'absolute', bottom: '80px', left: '20px', right: '20px', padding: '14px', borderRadius: '14px', backgroundColor: md3.surfaceContainerHigh, backdropFilter: md3.vibrancy, WebkitBackdropFilter: md3.vibrancy, boxShadow: '0 12px 32px rgba(0,0,0,0.18)', border: `1px solid ${md3.outline}`, display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 40 }}>
           {uploadProgress !== null && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: md3.onSurface, fontWeight: '600', marginBottom: '4px' }}>
                 <span>{t(lang, 'uploading')}</span> {/* 👈 翻译[cite: 2] */}
                 <span>{uploadProgress}%</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: md3.outline, borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '6px', backgroundColor: md3.surfaceContainer, borderRadius: '3px', overflow: 'hidden' }}>
                 <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: md3.primary, transition: 'width 0.1s' }} />
               </div>
             </div>
@@ -482,7 +486,7 @@ export default function ChatArea({
                 <span>{t(lang, 'receiving')}</span> {/* 👈 翻译[cite: 2] */}
                 <span>{downloadProgress}%</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: md3.outline, borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '6px', backgroundColor: md3.surfaceContainer, borderRadius: '3px', overflow: 'hidden' }}>
                 <div style={{ width: `${downloadProgress}%`, height: '100%', backgroundColor: md3.primary, transition: 'width 0.1s' }} />
               </div>
             </div>
@@ -499,7 +503,7 @@ export default function ChatArea({
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setIncomingFile(null)} style={{ padding: '6px 12px', border: 'none', background: 'transparent', color: md3.onSurface, fontSize: '12px', cursor: 'pointer' }}>{t(lang, 'ignore')}</button> {/* 👈 翻译[cite: 2] */}
-                <a href={incomingFile.url} download={incomingFile.name} onClick={() => setIncomingFile(null)} style={{ padding: '6px 14px', background: md3.primary, color: md3.onPrimary, borderRadius: '6px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' }}>{t(lang, 'saveNow')}</a> {/* 👈 翻译[cite: 2] */}
+                <a href={incomingFile.url} download={incomingFile.name} onClick={() => setIncomingFile(null)} style={{ padding: '6px 14px', background: md3.primary, color: md3.onPrimary, borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' }}>{t(lang, 'saveNow')}</a> {/* 👈 翻译[cite: 2] */}
               </div>
             </div>
           )}
@@ -507,7 +511,7 @@ export default function ChatArea({
       )}
 
       {/* 6. 底部消息输入 */}
-      <div style={{ padding: '16px 20px', borderTop: `1px solid ${md3.outline}`, backgroundColor: md3.surfaceContainerHigh, zIndex: 5 }}>
+      <div style={{ padding: '14px 20px', borderTop: `1px solid ${md3.separator}`, backgroundColor: md3.surfaceContainerHigh, backdropFilter: md3.vibrancyLight, WebkitBackdropFilter: md3.vibrancyLight, zIndex: 5 }}>
         <form onSubmit={sendMessage} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
           <button type="button" onClick={() => fileInputRef.current?.click()} title="P2P File Transfer" style={{ padding: '10px', border: 'none', background: md3.surfaceContainer, borderRadius: '12px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -516,7 +520,7 @@ export default function ChatArea({
           <input type="file" ref={fileInputRef} onChange={onFileChange} style={{ display: 'none' }} />
 
           {/* 💡 动态切换 P2P 在线/离线暂存占位符 */}
-          <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isPeerOnline ? t(lang, 'typeEncMessage') : t(lang, 'peerOfflineMessage')} style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', border: `1px solid ${md3.outline}`, outline: 'none', fontSize: '13.5px', backgroundColor: md3.surface, color: md3.onSurface }} /> {/* 👈 翻译[cite: 2] */}
+          <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={isPeerOnline ? t(lang, 'typeEncMessage') : t(lang, 'peerOfflineMessage')} style={{ flex: 1, padding: '11px 16px', borderRadius: '14px', border: 'none', outline: 'none', fontSize: '13.5px', backgroundColor: md3.surfaceContainer, color: md3.onSurface }} /> {/* 👈 翻译[cite: 2] */}
 
           <button type="submit" style={{ padding: '10px 20px', background: md3.primary, color: md3.onPrimary, border: 'none', borderRadius: '14px', fontSize: '13.5px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,97,164,0.15)' }}>
             {t(lang, 'send')} {/* 👈 翻译[cite: 2] */}

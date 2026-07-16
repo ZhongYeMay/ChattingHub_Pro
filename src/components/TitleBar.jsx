@@ -1,36 +1,47 @@
 import React, { useState } from 'react'
+import { TRAFFIC_LIGHTS } from '../utils/macTheme'
 
 export default function TitleBar({ windowState, setWindowState, onMouseDown, onDoubleClick }) {
   const [hoverBtn, setHoverBtn] = useState(null)
 
-  const titleBtnStyle = (type, baseColor = 'transparent') => ({
-    width: '46px', height: '32px', border: 'none',
-    background: hoverBtn === type ? (type === 'close' ? '#e81123' : 'rgba(0,0,0,0.08)') : baseColor,
-    color: hoverBtn === type && type === 'close' ? '#fff' : '#5f5f5f',
-    fontFamily: 'Marlett', fontSize: '12px', cursor: 'pointer',
+  // 🍎 macOS 红黄绿交通灯控制键
+  const lightStyle = (type) => ({
+    width: '12px', height: '12px', borderRadius: '50%', border: 'none', padding: 0,
+    background: TRAFFIC_LIGHTS[type], cursor: 'pointer', position: 'relative',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    transition: 'background-color 0.1s, color 0.1s', padding: 0, lineHeight: 1
+    boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.18)',
+    transition: 'filter 0.1s', filter: hoverBtn === type ? 'brightness(0.92)' : 'none',
+  })
+
+  const glyph = (type) => ({
+    fontSize: '9px', lineHeight: 1, color: 'rgba(0,0,0,0.55)', fontWeight: '700',
+    opacity: hoverBtn === type ? 1 : 0, transition: 'opacity 0.1s', pointerEvents: 'none',
   })
 
   return (
-    <div 
+    <div
       onMouseDown={onMouseDown}
-      onDoubleClick={onDoubleClick} // ✨ 修复：移除了残留的 handleDoubleClick，只保留唯一正确的 prop 回调
-      style={{ 
-        height: '32px', backgroundColor: 'rgba(243, 243, 243, 0.88)', backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '12px',
-        cursor: windowState === 'maximized' ? 'default' : 'move'
+      onDoubleClick={onDoubleClick}
+      style={{
+        height: '40px', backgroundColor: 'rgba(246, 246, 248, 0.55)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '16px', paddingRight: '12px',
+        cursor: windowState === 'maximized' ? 'default' : 'move',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '500', color: '#202020' }}>
-        <span style={{ fontSize: '14px' }}>💬</span>
-        <span>Chatting Hub Pro(Preview)</span>
+      {/* 左侧交通灯 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button title="关闭" onClick={() => setWindowState('closed')} style={lightStyle('close')} onMouseEnter={() => setHoverBtn('close')} onMouseLeave={() => setHoverBtn(null)}><span style={glyph('close')}>×</span></button>
+        <button title="最小化" onClick={() => setWindowState('minimized')} style={lightStyle('minimize')} onMouseEnter={() => setHoverBtn('minimize')} onMouseLeave={() => setHoverBtn(null)}><span style={glyph('minimize')}>−</span></button>
+        <button title={windowState === 'maximized' ? '向下还原' : '最大化'} onClick={() => setWindowState(windowState === 'maximized' ? 'normal' : 'maximized')} style={lightStyle('maximize')} onMouseEnter={() => setHoverBtn('maximize')} onMouseLeave={() => setHoverBtn(null)}><span style={glyph('maximize')}>＋</span></button>
       </div>
-      <div style={{ display: 'flex' }}>
-        <button title="最小化" onClick={() => setWindowState('minimized')} style={titleBtnStyle('minimize')} onMouseEnter={() => setHoverBtn('minimize')} onMouseLeave={() => setHoverBtn(null)}>0</button>
-        <button title={windowState === 'maximized' ? '向下还原' : '最大化'} onClick={() => setWindowState(windowState === 'maximized' ? 'normal' : 'maximized')} style={titleBtnStyle('maximize')} onMouseEnter={() => setHoverBtn('maximize')} onMouseLeave={() => setHoverBtn(null)}>{windowState === 'maximized' ? '2' : '1'}</button>
-        <button title="关闭重新打开" onClick={() => setWindowState('closed')} style={titleBtnStyle('close')} onMouseEnter={() => setHoverBtn('close')} onMouseLeave={() => setHoverBtn(null)}>r</button>
+
+      {/* 居中标题 */}
+      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '13px', fontWeight: '600', color: '#1d1d1f', letterSpacing: '0.2px', pointerEvents: 'none' }}>
+        Chatting Hub Pro
       </div>
+
+      {/* 右侧占位，保持标题居中 */}
+      <div style={{ width: '52px' }} />
     </div>
   )
 }

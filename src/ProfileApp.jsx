@@ -171,32 +171,32 @@ export default function ProfileApp() {
     )
   }
 
-  // 动态主题调色板（保持与大盘风格一致）
+  // 动态主题调色板（macOS 15 风格）
   const theme = {
-    surface: 'rgba(255, 255, 255, 0.85)',
-    onSurface: '#1a1c1e',
-    primary: '#0061a4',
+    surface: 'rgba(246, 246, 248, 0.78)',
+    onSurface: '#1d1d1f',
+    primary: '#007aff',
     onPrimary: '#ffffff',
-    errorContainer: '#ffeede',
-    onError: '#ba1a1a'
+    errorContainer: 'rgba(255, 59, 48, 0.1)',
+    onError: '#ff3b30',
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundImage: 'url(https://bing.img.run/uhd.php)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div style={{ width: '100vw', height: '100vh', backgroundImage: 'url(https://bing.img.run/uhd.php)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif' }}>
       
       {/* Toast 提示容器 */}
       {toast.text && (
-        <div style={{ position: 'absolute', top: '20px', padding: '10px 20px', borderRadius: '8px', background: toast.type === 'error' ? '#ffdad9' : toast.type === 'success' ? '#d6f5d6' : '#d1e4ff', color: toast.type === 'error' ? theme.onError : '#1a1c1e', fontSize: '13px', fontWeight: '600', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 1000, transition: 'all 0.2s' }}>
+        <div style={{ position: 'absolute', top: '20px', padding: '10px 20px', borderRadius: '100px', background: toast.type === 'error' ? '#ff3b30' : toast.type === 'success' ? '#34c759' : '#007aff', color: '#fff', fontSize: '13px', fontWeight: '600', boxShadow: '0 10px 30px rgba(0,0,0,0.25)', zIndex: 1000, transition: 'all 0.2s', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
           {toast.text}
         </div>
       )}
 
       {/* 仿真毛玻璃主控卡片 */}
-      <div style={{ width: '420px', padding: '30px 24px', backgroundColor: theme.surface, backdropFilter: 'blur(30px)', borderRadius: '24px', boxShadow: '0 24px 60px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', color: theme.onSurface }}>
+      <div style={{ width: '420px', padding: '32px 28px', backgroundColor: theme.surface, backdropFilter: 'blur(40px) saturate(200%)', WebkitBackdropFilter: 'blur(40px) saturate(200%)', borderRadius: '18px', boxShadow: '0 24px 70px rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.45)', display: 'flex', flexDirection: 'column', alignItems: 'center', color: theme.onSurface }}>
         
         {/* 头像预览模块 */}
         <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <img src={avatarUrl || 'https://api.dicebear.com/7.x/identicon/svg'} alt="User Avatar" style={{ width: '110px', height: '110px', borderRadius: '55px', objectFit: 'cover', backgroundColor: '#e0e2ec', border: `3px solid ${theme.primary}` }} />
+          <img src={avatarUrl || 'https://api.dicebear.com/7.x/identicon/svg'} alt="User Avatar" style={{ width: '110px', height: '110px', borderRadius: '55px', objectFit: 'cover', backgroundColor: 'rgba(0,0,0,0.05)', border: `3px solid ${theme.primary}` }} />
         </div>
 
         {/* 昵称及 Handle 展示 */}
@@ -205,7 +205,7 @@ export default function ProfileApp() {
 
         {/* 🚨 警报容器：当路径匹配查无此人时，渲染此专业化提示框 */}
         {errorNotice && (
-          <div style={{ width: '100%', boxSizing: 'border-box', padding: '12px 16px', background: 'rgba(186, 26, 26, 0.08)', borderRadius: '12px', border: '1px solid rgba(186, 26, 26, 0.2)', color: theme.onError, fontSize: '13px', fontWeight: '500', textAlign: 'center', marginBottom: '16px' }}>
+          <div style={{ width: '100%', boxSizing: 'border-box', padding: '12px 16px', background: theme.errorContainer, borderRadius: '12px', border: '1px solid rgba(255, 59, 48, 0.25)', color: theme.onError, fontSize: '13px', fontWeight: '500', textAlign: 'center', marginBottom: '16px' }}>
             !! {errorNotice} [我早已麻痹]
           </div>
         )}
@@ -214,23 +214,23 @@ export default function ProfileApp() {
         <form onSubmit={handleUpdateProfile} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
             <label style={{ fontSize: '12px', fontWeight: '600', opacity: 0.8, display: 'block', marginBottom: '4px' }}>显示名称 / 昵称</label>
-            <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={!isOwner} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: '10px', border: '1px solid #ccc', backgroundColor: isOwner ? '#fff' : 'rgba(0,0,0,0.04)', color: theme.onSurface, outline: 'none', fontSize: '13.5px' }} />
+            <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={!isOwner} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: '10px', border: 'none', backgroundColor: isOwner ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.03)', color: theme.onSurface, outline: 'none', fontSize: '13.5px' }} />
           </div>
 
           <div>
             <label style={{ fontSize: '12px', fontWeight: '600', opacity: 0.8, display: 'block', marginBottom: '4px' }}>个性 @用户名 (唯一)</label>
-            <input type="text" value={handleUsername} onChange={(e) => setHandleUsername(e.target.value)} disabled={!isOwner} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: '10px', border: '1px solid #ccc', backgroundColor: isOwner ? '#fff' : 'rgba(0,0,0,0.04)', color: theme.onSurface, outline: 'none', fontSize: '13.5px' }} />
+            <input type="text" value={handleUsername} onChange={(e) => setHandleUsername(e.target.value)} disabled={!isOwner} style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: '10px', border: 'none', backgroundColor: isOwner ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.03)', color: theme.onSurface, outline: 'none', fontSize: '13.5px' }} />
           </div>
 
           {isOwner && (
-            <div style={{ padding: '12px', border: '1px dashed #ccc', borderRadius: '12px', backgroundColor: 'rgba(0,0,0,0.01)' }}>
+            <div style={{ padding: '12px', border: '1px dashed rgba(0,0,0,0.2)', borderRadius: '12px', backgroundColor: 'rgba(0,0,0,0.02)' }}>
               <span style={{ fontSize: '12px', fontWeight: '600', opacity: 0.8, display: 'block', marginBottom: '6px' }}>📷 更换全新的高清头像文件</span>
               <input type="file" accept="image/*" onChange={handleAvatarFileChange} style={{ fontSize: '12px' }} />
             </div>
           )}
 
           {isOwner && (
-            <button type="submit" disabled={isSaving} style={{ width: '100%', padding: '12px', background: theme.primary, color: theme.onPrimary, border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,97,164,0.25)', transition: 'background 0.2s' }}>
+            <button type="submit" disabled={isSaving} style={{ width: '100%', padding: '12px', background: theme.primary, color: theme.onPrimary, border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,122,255,0.3)', transition: 'background 0.2s' }}>
                {isSaving ? '正在同步数据...' : '保存主页修改'}
             </button>
           )}
@@ -238,10 +238,10 @@ export default function ProfileApp() {
 
         {/* 底部控制按钮组 */}
         <div style={{ width: '100%', display: 'flex', gap: '10px', marginTop: '16px' }}>
-          <button onClick={handleCopyLink} style={{ flex: 2, padding: '10px', background: '#d1e4ff', color: '#001d36', border: 'none', borderRadius: '12px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'background 0.2s' }}>
+          <button onClick={handleCopyLink} style={{ flex: 2, padding: '10px', background: 'rgba(0,122,255,0.14)', color: '#00366e', border: 'none', borderRadius: '12px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', transition: 'background 0.2s' }}>
             复制链接
           </button>
-          <button onClick={() => window.location.replace('./chat.html')} style={{ flex: 1, padding: '10px', background: '#e0e2ec', color: '#1a1c1e', border: 'none', borderRadius: '12px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer' }}>
+          <button onClick={() => window.location.replace('./chat.html')} style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.05)', color: '#1d1d1f', border: 'none', borderRadius: '12px', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer' }}>
             返回聊天室
           </button>
         </div>

@@ -9,6 +9,8 @@ import SettingsWindow from './components/SettingsWindow'
 // 导入端到端加解密辅助函数
 import { encryptMessage, decryptMessage } from './utils/cryptoHelper'
 import { t } from './utils/i18n' // 👈 导入多语言翻译词条
+// 🍎 导入 macOS 15 (Sequoia) 设计语言主题
+import { getMacTheme, MAC_FONT } from './utils/macTheme'
 
 export default function ChatApp() {
   // 1. 核心数据与状态总线
@@ -20,6 +22,15 @@ export default function ChatApp() {
   const [loading, setLoading] = useState(true)
   const [networkError, setNetworkError] = useState(null)
   const messagesEndRef = useRef(null)
+
+  // 🔐 登录 / 注册状态机（修复：未登录时显示登录界面，而非跳转到无脚本的死页）
+  const [session, setSession] = useState(null)
+  const [authMode, setAuthMode] = useState('signin') // 'signin' | 'signup'
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authName, setAuthName] = useState('')
+  const [authBusy, setAuthBusy] = useState(false)
+  const [authError, setAuthError] = useState(null)
 
   // 💡 声明响应式全局多语言状态并监听本地偏好
   const [lang, setLang] = useState(() => localStorage.getItem('cyber_lang') || 'zh-CN')
@@ -88,24 +99,61 @@ export default function ChatApp() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    window.location.replace('./')
+    setSession(null)
+    setMyProfile(null)
+    setRooms([])
+    setCurrentRoom(null)
+    setMessages([])
+  }
+
+  // 🔐 登录 / 注册提交器
+  const handleAuth = async (e) => {
+    e.preventDefault()
+    setAuthBusy(true)
+    setAuthError(null)
+    try {
+      if (authMode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword })
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: { data: { display_name: authName || authEmail.split('@')[0], username: (authName || authEmail.split('@')[0]).toLowerCase().replace(/\s+/g, '') } }
+        })
+        if (error) throw error
+        if (data.session) {
+          // 注册后自动登录
+        } else {
+          setAuthError('注册成功，请查收验证邮件后登录。')
+        }
+      }
+    } catch (err) {
+      setAuthError(err.message || '认证失败，请重试。')
+    } finally {
+      setAuthBusy(false)
+    }
   }
 
   useEffect(() => {
     window.supabase = supabase
-    checkSessionAndInit()
-  }, [])
-
-  const checkSessionAndInit = () => {
-    setLoading(true)
-    setNetworkError(null)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.replace('./'); else initChatUser(session.user)
-    }).catch(err => {
-      setNetworkError(t(lang, 'networkErrorTitle')) // 👈 翻译
-      setLoading(false)
+    // 监听登录态变化，驱动界面切换
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess)
+      if (sess) {
+        initChatUser(sess.user)
+      } else {
+        setLoading(false)
+      }
     })
-  }
+    // 初次拉取已有会话
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess)
+      if (sess) initChatUser(sess.user)
+      else setLoading(false)
+    }).catch(() => setLoading(false))
+    return () => sub?.subscription?.unsubscribe()
+  }, [])
 
   const initChatUser = async (user) => {
     try {
@@ -538,26 +586,55 @@ export default function ChatApp() {
     return roomName.includes(searchQuery.toLowerCase())
   })
 
-  const md3 = (themesPalette => themesPalette[currentTheme] || themesPalette.light)({
-    light: { primary: '#0061a4', onPrimary: '#ffffff', primaryContainer: '#d1e4ff', onPrimaryContainer: '#001d36', surface: '#fdfcff', surfaceContainerLow: '#f2f3f7', surfaceContainer: '#ebebeb', surfaceContainerHigh: '#ffffff', onSurface: '#1a1c1e', onSurfaceVariant: '#43474e', outline: 'rgba(116, 117, 127, 0.25)' },
-    dark: { primary: '#a1caf1', onPrimary: '#003259', primaryContainer: '#00497e', onPrimaryContainer: '#d1e4ff', surface: '#111318', surfaceContainerLow: '#1a1c23', surfaceContainer: '#2e3038', surfaceContainerHigh: '#22242a', onSurface: '#e2e2e9', onSurfaceVariant: '#c3c6cf', outline: 'rgba(255, 255, 255, 0.15)' },
-    sunset: { primary: '#9c4146', onPrimary: '#ffffff', primaryContainer: '#ffdad9', onPrimaryContainer: '#410006', surface: '#fffbfa', surfaceContainerLow: '#fbeee3', surfaceContainer: '#f4ddcc', surfaceContainerHigh: '#ffffff', onSurface: '#221a1a', onSurfaceVariant: '#534343', outline: 'rgba(156, 65, 70, 0.2)' }
-  })
+  // 🍎 macOS 15 (Sequoia) 设计语言主题
+  const md3 = getMacTheme(currentTheme)
 
   const getWindowStyle = () => {
-    if (windowState === 'maximized') return { width: '100vw', height: 'calc(100vh - 48px)', position: 'absolute', top: taskbarPosition === 'top' ? '48px' : 0, left: 0, backgroundColor: md3.surface, display: 'flex', flexDirection: 'column', zIndex: 10, transition: 'all 0.15s ease-out' }
-    return { position: 'absolute', width: `${dimensions.width}px`, height: `${dimensions.height}px`, left: `${dimensions.left}px`, top: `${dimensions.top}px`, borderRadius: '12px', backgroundColor: md3.surface, boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255, 255, 255, 0.35)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 10, transition: (isDragging || resizeType) ? 'none' : 'all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)' }
+    if (windowState === 'maximized') return { width: '100vw', height: 'calc(100vh - 48px)', position: 'absolute', top: taskbarPosition === 'top' ? '48px' : 0, left: 0, backgroundColor: md3.surface, backdropFilter: md3.vibrancy, WebkitBackdropFilter: md3.vibrancy, display: 'flex', flexDirection: 'column', zIndex: 10, transition: 'all 0.15s ease-out' }
+    return { position: 'absolute', width: `${dimensions.width}px`, height: `${dimensions.height}px`, left: `${dimensions.left}px`, top: `${dimensions.top}px`, borderRadius: md3.radius.window, backgroundColor: md3.surface, backdropFilter: md3.vibrancy, WebkitBackdropFilter: md3.vibrancy, boxShadow: md3.shadow, border: `1px solid ${md3.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.45)'}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 10, transition: (isDragging || resizeType) ? 'none' : 'all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1)' }
   }
 
   // 💡 系统加载提示翻译
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', color: '#fff' }}>{t(lang, 'initializing')}</div>
 
+  // 🔐 未登录：渲染 macOS 风格登录 / 注册界面（修复“什么都点不动”）
+  if (!session) {
+    const mac = getMacTheme(currentTheme)
+    return (
+      <div style={{ width: '100vw', height: '100vh', backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: MAC_FONT }}>
+        <form onSubmit={handleAuth} style={{ width: '360px', padding: '32px 28px', backgroundColor: mac.surface, backdropFilter: mac.vibrancy, WebkitBackdropFilter: mac.vibrancy, borderRadius: '18px', boxShadow: mac.shadow, border: mac.isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.45)', display: 'flex', flexDirection: 'column', gap: '14px', color: mac.onSurface }}>
+          <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: mac.primary, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', boxShadow: '0 6px 16px rgba(0,0,0,0.25)' }}>💬</div>
+            <h2 style={{ margin: '14px 0 2px', fontSize: '20px', fontWeight: '700' }}>ChattingHub Pro</h2>
+            <span style={{ fontSize: '12px', opacity: 0.6 }}>{authMode === 'signin' ? '登录以继续' : '创建新账户'}</span>
+          </div>
+
+          {authMode === 'signup' && (
+            <input type="text" placeholder="显示昵称" value={authName} onChange={(e) => setAuthName(e.target.value)} style={{ padding: '11px 14px', borderRadius: '10px', border: 'none', backgroundColor: mac.surfaceContainer, color: mac.onSurface, outline: 'none', fontSize: '13.5px' }} />
+          )}
+          <input type="email" placeholder="邮箱地址" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} required style={{ padding: '11px 14px', borderRadius: '10px', border: 'none', backgroundColor: mac.surfaceContainer, color: mac.onSurface, outline: 'none', fontSize: '13.5px' }} />
+          <input type="password" placeholder="密码（至少 6 位）" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required minLength={6} style={{ padding: '11px 14px', borderRadius: '10px', border: 'none', backgroundColor: mac.surfaceContainer, color: mac.onSurface, outline: 'none', fontSize: '13.5px' }} />
+
+          {authError && <div style={{ fontSize: '12px', color: mac.error, textAlign: 'center' }}>{authError}</div>}
+
+          <button type="submit" disabled={authBusy} style={{ padding: '12px', background: mac.primary, color: mac.onPrimary, border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', opacity: authBusy ? 0.7 : 1 }}>
+            {authBusy ? '处理中…' : (authMode === 'signin' ? '登录' : '注册')}
+          </button>
+
+          <button type="button" onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthError(null) }} style={{ background: 'none', border: 'none', color: mac.primary, fontSize: '12.5px', cursor: 'pointer', fontWeight: '500' }}>
+            {authMode === 'signin' ? '没有账户？立即注册' : '已有账户？去登录'}
+          </button>
+        </form>
+      </div>
+    )
+  }
+
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden', userSelect: 'none', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ width: '100vw', height: '100vh', backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden', userSelect: 'none', fontFamily: MAC_FONT }}>
       
       {windowState === 'closed' && (
-        <div onClick={() => setWindowState('normal')} style={{ position: 'absolute', top: '30px', left: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '8px', cursor: 'pointer', backgroundColor: hoverBtn === 'shortcut' ? 'rgba(255,255,255,0.2)' : 'transparent', border: hoverBtn === 'shortcut' ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent', width: '84px', transition: 'background 0.2s' }} onMouseEnter={() => setHoverBtn('shortcut')} onMouseLeave={() => setHoverBtn(null)}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: md3.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>💬</div>
+        <div onClick={() => setWindowState('normal')} style={{ position: 'absolute', top: '30px', left: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '12px', cursor: 'pointer', backgroundColor: hoverBtn === 'shortcut' ? 'rgba(255,255,255,0.2)' : 'transparent', border: hoverBtn === 'shortcut' ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent', width: '84px', transition: 'background 0.2s' }} onMouseEnter={() => setHoverBtn('shortcut')} onMouseLeave={() => setHoverBtn(null)}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '14px', backgroundColor: md3.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', boxShadow: '0 6px 16px rgba(0,0,0,0.25)' }}>💬</div>
           <span style={{ color: '#fff', fontSize: '12px', fontWeight: '500', textShadow: '0 1px 3px rgba(0,0,0,0.8)', textAlign: 'center' }}>Chatting Hub Pro</span>
         </div>
       )}
